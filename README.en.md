@@ -15,6 +15,12 @@ the lyrics and composes the track. Everything runs **on your own computer**: no 
 
 <img src="docs/monitor-en.png" alt="Monitor window: GPU, CPU, RAM, fans" width="320">
 
+### Video
+
+[![Song Generator on YouTube](https://img.youtube.com/vi/_ENoNxXPGgs/hqdefault.jpg)](https://youtu.be/_ENoNxXPGgs)
+
+Video about the app: https://youtu.be/_ENoNxXPGgs
+
 ## Requirements
 
 - Windows 10/11 and an NVIDIA GPU with CUDA. Tested on an **RTX 4070 12 GB** (Gemma and ACE-Step do not fit

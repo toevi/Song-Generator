@@ -15,6 +15,12 @@ napisze tekst i skomponuje utwór. Wszystko działa **na twoim komputerze**: bez
 
 <img src="docs/monitor-pl.png" alt="Okienko podglądu: GPU, CPU, RAM, wentylatory" width="320">
 
+### Film
+
+[![Song Generator na YouTube](https://img.youtube.com/vi/_ENoNxXPGgs/hqdefault.jpg)](https://youtu.be/_ENoNxXPGgs)
+
+Film o aplikacji: https://youtu.be/_ENoNxXPGgs
+
 ## Wymagania
 
 - Windows 10/11, karta NVIDIA z CUDA. Sprawdzone na **RTX 4070 12 GB** (Gemma i ACE-Step nie mieszczą się
