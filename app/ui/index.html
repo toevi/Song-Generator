@@ -336,7 +336,7 @@ function showView(v) {
 $('monBtn').onclick = () => {
   const api = window.pywebview && window.pywebview.api;
   if (api && api.open_monitor) api.open_monitor();
-  else window.open('/monitor', 'sgmon', 'width=300,height=330');  // browser fallback
+  else window.open('/monitor', 'sgmon', 'width=320,height=520');  // browser fallback
 };
 $('gearBtn').onclick = () => showView($('view-models').classList.contains('active') ? 'music' : 'models');
 

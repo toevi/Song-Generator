@@ -230,8 +230,8 @@ class SaveApi:
                     return {"ok": True}
                 except Exception:  # okno zamknięte - robimy nowe
                     self._monitor = None
-            self._monitor = webview.create_window("Podgląd", self._url + "/monitor", width=300, height=330,
-                                                  resizable=True, on_top=True, min_size=(240, 260))
+            self._monitor = webview.create_window("Podgląd", self._url + "/monitor", width=320, height=520,
+                                                  resizable=True, on_top=True, min_size=(260, 300))
             return {"ok": True}
         except Exception as e:  # noqa: BLE001
             traceback.print_exc()
