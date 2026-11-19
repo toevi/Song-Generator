@@ -82,6 +82,19 @@ z płyty (obr./min). Użycie CPU i RAM idą z WinAPI, GPU z `nvidia-smi`. Temper
 wymagają **HWiNFO** z włączoną opcją „Obsługa pamięci współdzielonej” (Ustawienia → Ogólne; wersja darmowa
 wyłącza ją po 12 godzinach — wtedy uruchom HWiNFO od nowa). Bez HWiNFO te pola pokazują „—”.
 
+**Jak mieć pełny podgląd (temperatura CPU i wentylatory):**
+
+1. Zainstaluj **HWiNFO** (darmowy, [hwinfo.com](https://www.hwinfo.com/)). Przez winget działa źródło sklepu:
+   `winget install --id XP9CS6FHQ00B8J --source msstore` (domyślne źródło winget potrafi zwrócić błąd 404).
+2. Uruchom HWiNFO w trybie **Sensors-only** (albo „Sensors” z głównego okna).
+3. W jego **Ustawieniach → Ogólne** zaznacz **„Obsługa pamięci współdzielonej”** (*Shared Memory Support*).
+4. Zostaw HWiNFO uruchomiony (może być zminimalizowany). Okienko 📊 w Song Generator samo zacznie pokazywać
+   temperaturę CPU i wentylatory płyty.
+5. Wersja darmowa wyłącza pamięć współdzieloną po ok. 12 godzinach — wtedy uruchom HWiNFO ponownie.
+
+Bez HWiNFO okienko działa dalej, ale temperatura CPU i wentylatory płyty pokazują „—”. Które wentylatory się
+pojawią, zależy od tego, co widzi HWiNFO na twojej płycie.
+
 ## Struktura katalogów
 
 ```

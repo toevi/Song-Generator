@@ -82,6 +82,19 @@ motherboard **fans** (rpm). CPU usage and RAM come from the WinAPI, the GPU from
 and the motherboard fans require **HWiNFO** with "Shared Memory Support" enabled (Settings → General; the
 free version switches it off after 12 hours — restart HWiNFO then). Without HWiNFO those fields show "—".
 
+**How to get the full readout (CPU temperature and fans):**
+
+1. Install **HWiNFO** (free, [hwinfo.com](https://www.hwinfo.com/)). Through winget use the Store source:
+   `winget install --id XP9CS6FHQ00B8J --source msstore` (the default winget source can return a 404 error).
+2. Start HWiNFO in **Sensors-only** mode (or "Sensors" from the main window).
+3. In its **Settings → General** tick **"Shared Memory Support"**.
+4. Leave HWiNFO running (it can be minimised). The 📊 window in Song Generator then starts showing the CPU
+   temperature and the motherboard fans by itself.
+5. The free version switches shared memory off after about 12 hours — restart HWiNFO then.
+
+Without HWiNFO the window keeps working, but the CPU temperature and the motherboard fans show "—". Which fans
+appear depends on what HWiNFO sees on your motherboard.
+
 ## Directory layout
 
 ```
