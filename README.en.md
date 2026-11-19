@@ -42,6 +42,12 @@ Starting it a second time while it is already running brings the existing window
 Extra controls: **BPM** (empty = the genre's tempo), diffusion **Steps** 4–50 (more = more accurate, slower;
 default 8), **Seed** (`-1` = random; the same seed and description give the same track), **Fade out at the end**.
 
+### Interface language
+
+Polish or English: the list in the header (next to 📊 and ⚙). The choice is remembered; on first start the system
+language wins (anything but Polish → English). Translations live in `app\ui\i18n.js` (an entry = Polish text →
+English; a missing one stays in Polish). The monitor window uses the same choice.
+
 ### Models panel (⚙)
 
 The loaded profile, GPU memory (VRAM) use, **Load/Reload** buttons for the `gemma` and `muzyka` profiles,
@@ -91,6 +97,7 @@ Production documentation: what broke, how it was fixed and what was rejected.
 | 2026-11-19 | The monitor window was too small — the lower readings were cut off. | Window 320×520, content scrolls. |
 | 2026-11-19 | After the main window was closed, the process stayed alive with only the monitor window, held port 8765, and the next start opened the app in a browser. | Closing the main window closes the rest; a watchdog ends the process after 6 s if the windows do not close by themselves. |
 | 2026-11-19 | A second start while the app was running opened a needless second view in a browser. | The instance reports `native` in `/api/status`; a second start brings the existing window to the front and opens a browser only if the running instance is itself a browser view. |
+| 2026-11-19 | The interface was Polish only. | A PL/EN switcher in the header, translations in `app\ui\i18n.js`: the mechanism swaps the visible text in place (exact strings first, then patterns for text with variables) while the pages stay Polish in the source. Checked with a DOM dump in headless Edge: no Polish text is left in English mode. Not translated: the user's and the model's own text; the engine log in the panel translates only known messages. |
 | 2026-11-19 | The pywebview folder picker opened but saved nothing. | "Save all" uses the ordinary save dialog for the first file and its folder for the rest. |
 
 ## Open

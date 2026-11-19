@@ -42,6 +42,12 @@ Drugie uruchomienie przy działającej aplikacji wynosi jej okno na wierzch.
 Dodatkowe pokrętła: **BPM** (puste = tempo gatunku), **Kroki** dyfuzji 4–50 (więcej = dokładniej, wolniej;
 domyślnie 8), **Seed** (`-1` = losowo; ten sam seed i opis dają ten sam utwór), **Wyciszenie na końcu**.
 
+### Język interfejsu
+
+Polski albo angielski: lista w nagłówku (obok 📊 i ⚙). Wybór jest zapamiętany; przy pierwszym uruchomieniu
+wygrywa język systemu (inny niż polski → angielski). Tłumaczenia leżą w `app\ui\i18n.js` (wpis = polski tekst →
+angielski; brakujący zostaje po polsku). Okienko podglądu używa tego samego wyboru.
+
 ### Panel Modele (⚙)
 
 Załadowany profil, zajętość karty (VRAM), przyciski **Załaduj/Przeładuj** dla profili `gemma` i `muzyka`,
@@ -91,6 +97,7 @@ Dokumentacja produkcyjna: co się psuło, jak naprawiono i co odrzucono.
 | 2026-11-19 | Okienko podglądu okazało się za małe — dolne odczyty ucięte. | Okno 320×520, treść z przewijaniem. |
 | 2026-11-19 | Po zamknięciu głównego okna proces zostawał z samym oknem podglądu, trzymał port 8765, a następny start otwierał aplikację w przeglądarce. | Zamknięcie głównego okna zamyka resztę; watchdog kończy proces po 6 s, jeśli okna nie zamkną się same. |
 | 2026-11-19 | Drugie uruchomienie przy działającej aplikacji otwierało zbędny drugi widok w przeglądarce. | Instancja zgłasza `native` w `/api/status`; drugi start wynosi istniejące okno na wierzch, a przeglądarkę otwiera tylko wtedy, gdy działająca instancja sama jest widokiem w przeglądarce. |
+| 2026-11-19 | Interfejs był tylko po polsku. | Przełącznik PL/EN w nagłówku, tłumaczenia w `app\ui\i18n.js`: mechanizm podmienia widoczny tekst w miejscu (dokładne napisy, potem wzorce dla tekstów ze zmiennymi), a strony w źródle pozostają po polsku. Sprawdzone zrzutem DOM w Edge headless: po angielsku nie zostaje polski tekst. Nie tłumaczone: teksty użytkownika i modelu; log silnika w panelu tłumaczy tylko znane komunikaty. |
 | 2026-11-19 | Okno zapisu pywebview (wybieracz folderu) otwierało się, ale nic nie zapisywało. | „Zapisz wszystkie” używa zwykłego okna zapisu dla pierwszego pliku, a jego folder dla reszty. |
 
 ## Otwarte
