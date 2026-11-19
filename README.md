@@ -1,4 +1,5 @@
 # Song Generator
+n*English: [README.en.md](README.en.md)*
 
 Lokalny generator piosenek na Windows. Wpisujesz gatunek, nastrój i (opcjonalnie) tekst — aplikacja sama
 napisze tekst i skomponuje utwór. Wszystko działa **na twoim komputerze**: bez chmury, bez kont, bez limitów.
