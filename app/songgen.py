@@ -14,6 +14,7 @@ import threading
 import time
 import traceback
 import urllib.parse
+import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -31,7 +32,7 @@ UI_DIR = BASE / "ui"
 WEBVIEW_DIR = BASE / ".okno"  # profil okna: trzyma localStorage (lista utworów, ustawienia) między uruchomieniami
 CONFIG_PATH = BASE / "app.json"
 MAX_BODY = 32 * 2**20
-UI = {"last_poll": 0.0, "bye": 0.0}
+UI = {"last_poll": 0.0, "bye": 0.0, "native": False}  # native: działa okno pywebview
 BYE_GRACE_S = 15
 WINDOWS_DONE = threading.Event()  # ustawiane, gdy webview.start wróci (wszystkie okna zamknięte)
 
@@ -88,6 +89,7 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/api/status":
             UI["last_poll"] = time.monotonic()
             st = E.status()
+            st["native"] = UI["native"]
             a = E.apply_state()
             st["apply"] = {k: a[k] for k in ("running", "name", "code", "elapsed", "expected")}
             if st["online"]:
@@ -345,6 +347,29 @@ def _on_console_close(action):
     ctypes.windll.kernel32.SetConsoleCtrlHandler(handler, True)
 
 
+def _running_in_window(url):
+    """Czy działająca instancja ma natywne okno (a nie widok w przeglądarce)."""
+    try:
+        with urllib.request.urlopen(url + "/api/status", timeout=3) as r:
+            return bool(json.loads(r.read()).get("native"))
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _focus_window():
+    """Przywraca i wynosi na wierzch okno „Song Generator”; False, gdy go nie znaleziono."""
+    if sys.platform != "win32":
+        return False
+    import ctypes
+    u = ctypes.windll.user32
+    hwnd = u.FindWindowW(None, "Song Generator")
+    if not hwnd:
+        return False
+    u.ShowWindow(hwnd, 9)  # SW_RESTORE
+    u.SetForegroundWindow(hwnd)
+    return True
+
+
 def serve():
     cfg = app_config()
     url = f"http://{cfg['host']}:{cfg['port']}"
@@ -352,6 +377,8 @@ def serve():
         httpd = Server((cfg["host"], cfg["port"]), Handler)
     except OSError:
         print(f"Port {cfg['port']} jest zajęty - Song Generator już działa w innym oknie.")
+        if _running_in_window(url) and _focus_window():
+            return  # działa natywne okno: wynosimy je na wierzch zamiast otwierać drugi widok w przeglądarce
         webbrowser.open(url)
         return
     print(f"Song Generator: {url}")
@@ -366,6 +393,7 @@ def serve():
         print("Brak pywebview (pip install pywebview) - otwieram w przeglądarce.")
         have_window = False
     if have_window:
+        UI["native"] = True
         threading.Thread(target=httpd.serve_forever, daemon=True).start()
         run_webview(url)
         print("\nOkno Song Generator zamknięte.")
