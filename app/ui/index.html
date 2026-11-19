@@ -157,6 +157,7 @@
     <h1><span class="note">♪</span>Song Generator</h1>
     <div id="profChips"></div>
     <div id="status"><span class="dot"></span><span id="statusText">sprawdzam model…</span><span class="spin" id="lspin" hidden></span><span class="lprog" id="lprog" hidden><i></i></span><span class="hint" id="vramText"></span></div>
+    <button class="gear" id="monBtn" title="Podgląd: GPU, CPU, RAM (małe okienko)">📊</button>
     <button class="gear" id="gearBtn" title="Modele i ustawienia">⚙</button>
   </div>
   <div class="toolbar" id="toolbar">
@@ -332,6 +333,11 @@ function showView(v) {
   $('toolbar').hidden = v !== 'music';
   if (v === 'models') loadModels();
 }
+$('monBtn').onclick = () => {
+  const api = window.pywebview && window.pywebview.api;
+  if (api && api.open_monitor) api.open_monitor();
+  else window.open('/monitor', 'sgmon', 'width=300,height=330');  // browser fallback
+};
 $('gearBtn').onclick = () => showView($('view-models').classList.contains('active') ? 'music' : 'models');
 
 // ---- models: loaded profile, VRAM, profile chips in the header

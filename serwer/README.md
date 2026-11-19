@@ -16,3 +16,14 @@ zwalnia do maks. 99%, więc długie ładowanie nie wygląda na zawieszone (statu
 `engine.apply_state()` dodaje `elapsed` do `APPLY` dla `/api/status` i `/api/apply`.
 Podejście odrzucone: parsowanie wyjścia Kobolda — startuje z `--quiet` i ukrytym oknem, a format logu
 nie jest stabilny między wersjami.
+
+## Okienko podglądu (📊 w nagłówku)
+
+`sysmon.py` + `app/ui/monitor.html` (trasy `/monitor`, `/api/sys`): małe okno „zawsze na wierzchu” z GPU
+(użycie, temperatura, VRAM, pobór, zegar — `nvidia-smi`), CPU (użycie — `GetSystemTimes`), RAM
+(`GlobalMemoryStatusEx`); odświeżanie co 1,5 s, odczyt cache'owany 1 s. Bez zależności (psutil nie jest
+zainstalowany). **Temperatura CPU:** Windows nie daje jej bez sterownika czujników (WMI/`Thermal Zone`
+puste na Ryzen 7 5700X), więc jest czytana z pamięci współdzielonej HWiNFO (`Global\HWiNFO_SENS_SM2`) —
+wymaga uruchomionego HWiNFO z włączonym „Shared Memory Support”; bez tego pole pokazuje „—” i podpowiedź.
+Okienko zamyka się razem z głównym oknem (inaczej `webview.start` nie wróciłoby). Podejście odrzucone:
+LibreHardwareMonitor przez pythonnet — wymaga admina i własnego sterownika, za ciężkie.

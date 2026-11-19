@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Podgląd</title>
+<link rel="icon" href="/icon.png">
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --text: #1d2330; --muted: #6b7385; --line: #dde1e8;
+    --accent: #6d4fd8; --ok: #1f9d55; --bad: #d64545; --warn: #d69e2e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #14171d; --panel: #1c2028; --text: #e4e7ee; --muted: #8b93a5; --line: #2c323e;
+            --accent: #9378f0; --ok: #3cc47c; --bad: #f06b6b; --warn: #e8b84a; }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--text); padding: 10px 12px; overflow: hidden;
+         font: 13px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  h2 { margin: 0 0 4px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+       color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+  h2 span { text-transform: none; letter-spacing: 0; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  section { margin-bottom: 10px; }
+  .row { display: grid; grid-template-columns: 38px 1fr 62px; align-items: center; gap: 8px; margin: 3px 0; }
+  .row b { font-weight: 500; color: var(--muted); }
+  .row em { font-style: normal; text-align: right; font-variant-numeric: tabular-nums; }
+  .bar { height: 8px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); overflow: hidden; }
+  .bar > i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .5s linear, background .3s; }
+  .bar.mid > i { background: var(--warn); }
+  .bar.hot > i { background: var(--bad); }
+  .off { color: var(--muted); }
+  #err { color: var(--bad); font-size: 12px; }
+</style>
+</head>
+<body>
+<section>
+  <h2>GPU <span id="gname"></span></h2>
+  <div class="row"><b>użycie</b><div class="bar" id="gutilB"><i></i></div><em id="gutil">—</em></div>
+  <div class="row"><b>temp.</b><div class="bar" id="gtempB"><i></i></div><em id="gtemp">—</em></div>
+  <div class="row"><b>VRAM</b><div class="bar" id="gvramB"><i></i></div><em id="gvram">—</em></div>
+  <div class="row"><b>pobór</b><div></div><em id="gpow">—</em></div>
+</section>
+<section>
+  <h2>CPU</h2>
+  <div class="row"><b>użycie</b><div class="bar" id="cutilB"><i></i></div><em id="cutil">—</em></div>
+  <div class="row"><b>temp.</b><div class="bar" id="ctempB"><i></i></div><em id="ctemp">—</em></div>
+  <div class="off" id="ctempHint" hidden style="font-size:11px">Temperatura CPU: uruchom HWiNFO z włączonym „Shared Memory Support”.</div>
+</section>
+<section>
+  <h2>RAM</h2>
+  <div class="row"><b>użycie</b><div class="bar" id="rutilB"><i></i></div><em id="rutil">—</em></div>
+</section>
+<div id="err"></div>
+<script>
+const $ = id => document.getElementById(id);
+const GB = b => (b / 2 ** 30).toFixed(1).replace('.', ',');
+// level thresholds: [medium, hot]
+function setBar(id, pct, text, [mid, hot]) {
+  const b = $(id + 'B');
+  b.firstElementChild.style.width = Math.max(0, Math.min(100, pct ?? 0)) + '%';
+  b.classList.toggle('mid', pct >= mid && pct < hot); b.classList.toggle('hot', pct >= hot);
+  $(id).textContent = text;
+}
+async function tick() {
+  try {
+    const d = await (await fetch('/api/sys')).json();
+    $('err').textContent = '';
+    const g = d.gpu;
+    if (g) {
+      $('gname').textContent = g.name.replace(/^NVIDIA GeForce /, '');
+      setBar('gutil', g.util, g.util == null ? '—' : Math.round(g.util) + ' %', [70, 95]);
+      setBar('gtemp', g.temp, g.temp == null ? '—' : Math.round(g.temp) + ' °C', [70, 83]);
+      setBar('gvram', g.vram_used / g.vram_total * 100, `${GB(g.vram_used)} / ${GB(g.vram_total)} GB`, [80, 95]);
+      $('gpow').textContent = g.power == null ? '—' : Math.round(g.power) + ' W' + (g.clock ? ` · ${Math.round(g.clock)} MHz` : '');
+    } else $('gname').textContent = 'brak odczytu (nvidia-smi)';
+    const c = d.cpu;
+    setBar('cutil', c.util, c.util == null ? '…' : Math.round(c.util) + ' %', [70, 95]);
+    setBar('ctemp', c.temp, c.temp == null ? '—' : Math.round(c.temp) + ' °C', [75, 88]);
+    $('ctempHint').hidden = c.temp != null;
+    if (d.ram) setBar('rutil', d.ram.used / d.ram.total * 100, `${GB(d.ram.used)} / ${GB(d.ram.total)} GB`, [75, 90]);
+  } catch { $('err').textContent = 'brak połączenia z aplikacją'; }
+}
+tick(); setInterval(tick, 1500);
+</script>
+</body>
+</html>

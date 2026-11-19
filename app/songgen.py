@@ -24,6 +24,7 @@ sys.path.insert(0, str(BASE))
 import engine as E  # noqa: E402
 import lyrics as L  # noqa: E402
 import music as MU  # noqa: E402
+import sysmon as SM  # noqa: E402
 
 UI_DIR = BASE / "ui"
 WEBVIEW_DIR = BASE / ".okno"  # profil okna: trzyma localStorage (lista utworów, ustawienia) między uruchomieniami
@@ -93,6 +94,10 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, st)
         elif path == "/api/models":
             self._json(200, E.overview())
+        elif path == "/monitor":
+            self._send(200, (UI_DIR / "monitor.html").read_bytes(), "text/html; charset=utf-8")
+        elif path == "/api/sys":
+            self._json(200, SM.sample())
         elif path == "/api/apply":
             self._json(200, E.apply_state())
         else:
@@ -209,7 +214,26 @@ class SaveApi:
 
     def __init__(self):
         self._window = None  # z podkreśleniem: pywebview nie może wchodzić w obiekt Window (nieskończona rekurencja)
+        self._monitor = None
+        self._url = ""
         self.folder = None   # folder wybrany dla „zapisz wszystkie” w tym oknie
+
+    def open_monitor(self):
+        """Małe okienko podglądu (GPU/CPU/RAM) nad innymi oknami; drugie kliknięcie wynosi istniejące na wierzch."""
+        import webview
+        try:
+            if self._monitor is not None:
+                try:
+                    self._monitor.show()
+                    return {"ok": True}
+                except Exception:  # okno zamknięte - robimy nowe
+                    self._monitor = None
+            self._monitor = webview.create_window("Podgląd", self._url + "/monitor", width=300, height=330,
+                                                  resizable=True, on_top=True, min_size=(240, 260))
+            return {"ok": True}
+        except Exception as e:  # noqa: BLE001
+            traceback.print_exc()
+            return {"ok": False, "error": str(e)}
 
     @staticmethod
     def _data(data):
@@ -279,8 +303,17 @@ def run_webview(url):
         # Własna grupa na pasku zadań, żeby Windows pokazał naszą ikonę zamiast python.exe.
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("SongGenerator.App")
     api = SaveApi()
+    api._url = url
     api._window = webview.create_window("Song Generator", url, width=1400, height=900, min_size=(900, 600),
                                         js_api=api)
+
+    def _close_monitor():  # webview.start wraca dopiero po zamknięciu WSZYSTKICH okien
+        try:
+            if api._monitor is not None:
+                api._monitor.destroy()
+        except Exception:  # noqa: BLE001
+            pass
+    api._window.events.closed += _close_monitor
     webview.start(private_mode=False, storage_path=str(WEBVIEW_DIR), icon=str(UI_DIR / "icon.ico"))
 
 
