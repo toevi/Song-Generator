@@ -74,9 +74,10 @@ klaski w bridge'u) wygenerowany w trzech gatunkach. Zmieniało się tylko pole *
 The same caveat applies: every take comes out differently, and the model reads the tags loosely.
 Obowiązuje ta sama uwaga: każde podejście wychodzi inaczej, a model czyta znaczniki swobodnie.
 
-**The style description matters / Opis stylu ma znaczenie.** Tested on this metal example (same lyrics and settings, only the
-Style description changed): with the field **empty** the track was metal but **without any vocals**; with `metal lata 90` (90s
-metal) the vocals came in. One example, so treat it as a strong hint, not a guarantee. Keep the field filled in.
-Sprawdzone na tym przykładzie metalowym (ten sam tekst i ustawienia, zmieniony tylko opis stylu): przy **pustym** polu utwór był
-metalowy, ale **bez wokalu**; z `metal lata 90` wokal się pojawił. To jeden przykład, więc traktuj to jako mocną wskazówkę, nie
-gwarancję. Nie zostawiaj tego pola pustego.
+**The style description helps / Opis stylu pomaga.** Without a Style description the model tends to make a weaker, more generic
+track, and in the first metal take the vocals did not come through. A retest with the field empty (same lyrics and settings)
+did sing, only later in the track, so the description is **not** what decides whether vocals appear: the model decides that
+loosely, and results vary from take to take. A few words of style are still worth adding because they steer the sound.
+Bez opisu stylu model robi zwykle słabszy, bardziej ogólny utwór, a w pierwszym metalu wokal się nie pojawił. Powtórka z pustym
+polem (ten sam tekst i ustawienia) jednak zaśpiewała, tylko później w utworze, więc opis **nie** decyduje o tym, czy będzie
+wokal: model robi to swobodnie, a wyniki różnią się między podejściami. Kilka słów stylu warto dopisać, bo kierują brzmieniem.
