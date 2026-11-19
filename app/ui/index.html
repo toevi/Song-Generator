@@ -1041,8 +1041,8 @@ function lyrConflicts(text, voice) {
     plainLines++;
     if (/instrumental|solo|interlude|drum break|percussion break/i.test(tag)) { n++; if (!firstTag) firstTag = tag; }
   }
-  if (n) out.push(`pod [${firstTag}] jest tekst do śpiewania – znacznik instrumentalny go wycisza (usuń tekst albo zmień znacznik)`);
-  if (voice === 'backing calls' && plainLines) out.push('w trybie „tylko muzyka + okrzyki” model śpiewa głównie wersy w nawiasach (…); żeby śpiewał zwykłe wersy, wybierz głos w polu Wokal');
+  if (n) out.push(`pod [${firstTag}] jest tekst – znacznik instrumentalny go wycisza`);
+  if (voice === 'backing calls' && plainLines) out.push('tryb okrzyków śpiewa głównie wersy w nawiasach (…) – zwykłe wersy: wybierz głos');
   return out.map(w => (window.I18N ? I18N.tr(w) : w));
 }
 function lyrSeconds(text) {

@@ -177,7 +177,7 @@
     ['co', 'every'],
     ['Zamknij', 'Close'],
     // ---- Song Generator additions
-    ['w trybie „tylko muzyka + okrzyki” model śpiewa głównie wersy w nawiasach (…); żeby śpiewał zwykłe wersy, wybierz głos w polu Wokal', 'in the “music + choir shouts” mode the model mainly sings the bracketed lines (…); to make it sing plain lines, choose a voice in the Vocals field'],
+    ['tryb okrzyków śpiewa głównie wersy w nawiasach (…) – zwykłe wersy: wybierz głos', 'the shouts mode mainly sings the bracketed lines (…) – for plain lines choose a voice'],
     ['Pomoc', 'Help'],
     ['Wersja', 'Version'],
     ['Pomoc i informacje o programie', 'Help and about'],
@@ -291,7 +291,7 @@
     [/^Zła wartość: (.+)$/, 'Invalid value: $1'],
     [/^(.+) poza zakresem (.+)$/, '$1 out of range $2'],
     // ---- Song Generator additions
-    [/^pod \[(.+)\] jest tekst do śpiewania – znacznik instrumentalny go wycisza \(usuń tekst albo zmień znacznik\)$/, 'under [$1] there is text to sing – an instrumental tag mutes it (remove the text or change the tag)'],
+    [/^pod \[(.+)\] jest tekst – znacznik instrumentalny go wycisza$/, 'under [$1] there is text – an instrumental tag mutes it'],
     [/^komponuję… (\d+) s · (.+)$/, 'composing… $1 s · $2'],
     [/^Czekam na wczytanie modelu(\.*) gotowe\.$/, 'Waiting for the model to load$1 done.'],
     [/^Czekam na wczytanie modelu(\.*)$/, 'Waiting for the model to load$1'],
