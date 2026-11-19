@@ -3,7 +3,6 @@
 To jedyne miejsce, które zna proces `koboldcpp.exe`: start, przełączanie profilu gemma <-> muzyka
 przez admin API, wyładowanie z karty, stan. Aplikacja (`app\\`) tylko woła funkcje stąd.
 Układ katalogów: serwer\\ (ten kod + koboldcpp.exe + serwer.json), modele\\ (pliki .gguf), app\\ (okno i UI).
-Logika przełączania przeniesiona z Little Mate (ensure_llm / swap_llm), bez zmian w zachowaniu.
 """
 import json
 import re

@@ -1,4 +1,4 @@
-Endpointy używane przez app/ui/index.html (kontrakt z backendem; nazwy jak w Little Mate)
+Endpointy używane przez app/ui/index.html (kontrakt z backendem)
 ==========================================================================================
 Pliki statyczne
   GET  /                    index.html

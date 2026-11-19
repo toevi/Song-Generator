@@ -1,7 +1,6 @@
 """Generator muzyki: ACE-Step 1.5 przez KoboldCpp (profil `muzyka`).
 
-Przeniesione z Little Mate (generate_music, VOICES) bez zmian w logice. Dwa wywołania, jak własny
-interfejs muzyczny Kobolda: /prepare (LM planuje utwór) i /generate (render).
+Dwa wywołania, jak własny interfejs muzyczny Kobolda: /prepare (LM planuje utwór) i /generate (render).
 """
 import uuid
 

@@ -11,7 +11,7 @@ napisze tekst i skomponuje utwór. Wszystko działa **na twoim komputerze**: bez
   włoskim, niemieckim, hiszpańskim lub francuskim, albo sam podkład.
 - **Silnik:** KoboldCpp (CUDA), uruchamiany i przełączany przez aplikację — nie trzeba go obsługiwać ręcznie.
 
-Aplikacja wycięta z Little Mate: zostały tylko obsługa modeli i generator muzyki.
+
 
 ## Wymagania
 
@@ -77,7 +77,7 @@ serwer\   engine.py (KoboldCpp: start, przełączanie profilu, stan), models.py 
 modele\   pliki .gguf (poza gitem)
 ```
 
-Szczegóły silnika, profili i wskaźników: `serwer\README.md`. Plan i decyzje z początku projektu: `PLAN.md`.
+Szczegóły silnika, profili i wskaźników: `serwer\README.md`. Założenia i przepływ pracy: `DESIGN.md`.
 
 ## Autor i licencja
 

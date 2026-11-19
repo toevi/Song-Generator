@@ -11,7 +11,7 @@ the lyrics and composes the track. Everything runs **on your own computer**: no 
   Italian, German, Spanish or French, or as an instrumental.
 - **Engine:** KoboldCpp (CUDA), started and switched by the app — you never have to operate it by hand.
 
-Cut out of Little Mate: only model management and the music generator were kept.
+
 
 ## Requirements
 
@@ -77,7 +77,7 @@ serwer\   engine.py (KoboldCpp: start, profile switching, status), models.py (GG
 modele\   .gguf model files (not in git)
 ```
 
-Engine, profile and indicator details: `serwer\README.md`. Plan and early decisions: `PLAN.md`.
+Engine, profile and indicator details: `serwer\README.md`. Design decisions and workflow: `DESIGN.md`.
 
 ## Author and licence
 

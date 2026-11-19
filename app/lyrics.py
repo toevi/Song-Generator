@@ -1,6 +1,5 @@
 """Teksty piosenek: Gemma pisze wersy do szablonu, dopasowuje tekst użytkownika do szablonu.
 
-Przeniesione z Little Mate (write_lyrics, fit_lyrics, fill_skeleton) bez zmian w logice.
 Model tekstowy to profil `gemma` w serwerze; ta warstwa tylko woła /v1/chat/completions.
 """
 import json

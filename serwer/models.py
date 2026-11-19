@@ -2,8 +2,7 @@
 
 Profil = jedno załadowanie KoboldCpp: albo model tekstowy (Gemma — teksty piosenek), albo zestaw
 muzyczny ACE-Step 1.5 (cztery pliki). Oba naraz nie mieszczą się w 12 GB, więc zawsze działa jeden profil.
-Logika (nagłówki GGUF, szacunek VRAM, argumenty Kobolda, walidacja) przeniesiona z Little Mate
-bez zmian w działaniu; wycięte gałęzie obrazu, wideo, mowy i projektora obrazu.
+Tu: nagłówki GGUF, szacunek VRAM, argumenty Kobolda i walidacja profili.
 """
 import re
 import shutil
