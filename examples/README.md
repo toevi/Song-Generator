@@ -94,5 +94,7 @@ Najprostszy sposób użycia: bez własnego tekstu, tylko gatunek i krótki opis.
 | Style description / Opis stylu | `disco dance track about a summer Saturday night in San Francisco, fast, 80s` |
 | Lyrics / Tekst | left empty — Gemma writes them / puste — pisze Gemma |
 
-**Listen / Posłuchaj:** [`disco-san-francisco.mp3`](disco-san-francisco.mp3) (4.1 MB). The lyrics are different on every run, so there is no text file for this one.
-Tekst za każdym razem wychodzi inny, więc dla tego przykładu nie ma pliku z tekstem.
+**Listen / Posłuchaj:** [`disco-san-francisco.mp3`](disco-san-francisco.mp3) and a second run with the same settings, [`disco-san-francisco-2.mp3`](disco-san-francisco-2.mp3) (4.1 MB each).
+[`disco-san-francisco.mp3`](disco-san-francisco.mp3) i drugie podejście z tymi samymi ustawieniami, [`disco-san-francisco-2.mp3`](disco-san-francisco-2.mp3) (po 4,1 MB).
+The lyrics are different on every run, so there are no text files for these. The two takes show how much the result varies.
+Tekst za każdym razem wychodzi inny, więc nie ma dla nich plików z tekstem. Dwa podejścia pokazują, jak bardzo wynik się różni.
