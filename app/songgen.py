@@ -90,6 +90,7 @@ class Handler(BaseHTTPRequestHandler):
             UI["last_poll"] = time.monotonic()
             st = E.status()
             st["native"] = UI["native"]
+            st["version"] = app_config().get("version", "")
             a = E.apply_state()
             st["apply"] = {k: a[k] for k in ("running", "name", "code", "elapsed", "expected")}
             if st["online"]:

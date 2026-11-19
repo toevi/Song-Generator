@@ -61,6 +61,10 @@
   /* The page fills the window: maximising or resizing grows the work areas, not just the margins. */
   main { flex: 1; min-height: 0; width: 100%; max-width: 1800px; margin: 0 auto; padding: 16px;
          display: flex; flex-direction: column; overflow: auto; }
+  .help { max-width: 860px; width: 100%; margin: 0 auto; line-height: 1.55; }
+  .help h2 { margin: 0 0 4px; font-size: 20px; }
+  .help h3 { margin: 18px 0 6px; font-size: 15px; }
+  .help ul, .help ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 5px; }
   .view { display: none; } .view.active { display: flex; flex-direction: column; flex: 1 0 auto; gap: 16px; }
   #view-music.active { flex: 1 1 0; min-height: 420px; }
 
@@ -162,6 +166,7 @@
     <div id="status"><span class="dot"></span><span id="statusText">sprawdzam model…</span><span class="spin" id="lspin" hidden></span><span class="lprog" id="lprog" hidden><i></i></span><span class="hint" id="vramText"></span></div>
     <select id="langSel" class="langsel" title="Language / Język"></select>
     <button class="gear" id="monBtn" title="Podgląd: GPU, CPU, RAM (małe okienko)">📊</button>
+    <button class="gear" id="helpBtn" title="Pomoc i informacje o programie">?</button>
     <button class="gear" id="gearBtn" title="Modele i ustawienia">⚙</button>
   </div>
   <div class="toolbar" id="toolbar">
@@ -314,6 +319,67 @@
       </div>
     </div>
   </section>
+  <!-- help:begin -->
+  <section id="view-help" class="view">
+    <div class="card help">
+      <h2>Pomoc</h2>
+      <h3>Szybki start</h3>
+      <ol>
+        <li>Wybierz gatunek na górnym pasku; opcjonalnie też skład, wokal, język śpiewu i długość.</li>
+        <li>Opcjonalnie wpisz tytuł i opis stylu (nastrój, do czego ma być utwór).</li>
+        <li>Kliknij „Generuj muzykę”. Przy pierwszym utworze i przy każdym przełączeniu modeli czekasz 15–60 s na załadowanie.</li>
+        <li>Gotowy utwór odsłuchasz w odtwarzaczu po prawej. „Zapisz…” zapisuje plik MP3 albo WAV.</li>
+      </ol>
+      <h3>Tekst piosenki</h3>
+      <ul>
+        <li>Pole tekstu pojawia się, gdy wybierzesz wokal. Bez wokalu powstaje sam podkład.</li>
+        <li>Puste pole: Gemma napisze tekst na podstawie opisu i gatunku.</li>
+        <li>„Gemma: wypełnij tekst” uzupełnia kropki szablonu; Twoje własne wersy zostają bez zmian.</li>
+        <li>„Dopasuj mój tekst do szablonu”: wklej gotowy tekst do pola „Twój gotowy tekst”, a Gemma ułoży go w zwrotki i refreny, nie dopisując własnych słów.</li>
+        <li>„Szablon ▾” wstawia szkielet ze znacznikami [Verse], [Chorus], [Bridge]. Prawy przycisk myszy w polu tekstu wstawia pojedynczy znacznik.</li>
+      </ul>
+      <h3>Pokrętła na górnym pasku</h3>
+      <ul>
+        <li>Tempo (BPM): puste = tempo gatunku albo dobór przez model. 70 to spokojnie, 120 żwawo.</li>
+        <li>Kroki: liczba kroków dyfuzji, 4–50. Więcej daje dokładniejszy, ale wolniejszy utwór. Domyślnie 8.</li>
+        <li>Seed: −1 oznacza losowo. Ten sam seed i ten sam opis dają ten sam utwór.</li>
+        <li>Format: MP3 to mały plik, WAV jest bez strat i zajmuje kilkadziesiąt MB.</li>
+      </ul>
+      <h3>Modele i pamięć karty (⚙)</h3>
+      <ul>
+        <li>Są dwa profile: gemma (pisze teksty) i muzyka (ACE-Step). Oba naraz nie mieszczą się w pamięci karty, więc zawsze działa jeden.</li>
+        <li>Zwykle nic nie trzeba klikać: „Generuj” samo załaduje potrzebny profil. Profil możesz też załadować ręcznie z nagłówka albo z panelu ⚙.</li>
+        <li>Jeśli model akurat generuje, przełączenie się nie uda. Poczekaj chwilę i spróbuj ponownie.</li>
+        <li>„Wyłącz model” zwalnia kartę graficzną dla innych programów. Zamknięcie okna Song Generator robi to samo.</li>
+      </ul>
+      <h3>Okienko monitora (📊)</h3>
+      <ul>
+        <li>Małe okno zawsze na wierzchu: użycie i temperatura GPU, VRAM, pobór mocy, użycie CPU, RAM i wentylatory.</li>
+        <li>Temperatura CPU i wentylatory płyty wymagają programu HWiNFO z włączoną opcją „Obsługa pamięci współdzielonej” (wersja darmowa wyłącza ją po 12 godzinach). Bez niego pola pokazują „—”.</li>
+      </ul>
+      <h3>Zapisywanie utworów</h3>
+      <ul>
+        <li>Utwory nie zapisują się same: historia znika po zamknięciu okna. „Zapisz…” pyta, gdzie zapisać plik.</li>
+        <li>Aby zapisać kilka naraz, zaznacz je na liście i kliknij „Zapisz wszystkie”. Pliki o tej samej nazwie dostają końcówkę -2, -3, nic nie jest nadpisywane.</li>
+      </ul>
+      <h3>Gdy coś nie działa</h3>
+      <ul>
+        <li>„model niedostępny”: serwer modeli jeszcze się ładuje albo nie wystartował. Poczekaj do minuty; jeśli nie pomaga, sprawdź, czy w folderze serwer jest koboldcpp.exe, a w folderze modele pliki .gguf.</li>
+        <li>„Model jest zajęty”: trwa generowanie. Poczekaj na jego koniec.</li>
+        <li>Brak pamięci karty albo bardzo wolne działanie: zamknij inne programy używające karty graficznej (gry, przeglądarki z akceleracją) i spróbuj ponownie.</li>
+        <li>Utwór bez wokalu mimo wybranego głosu: model muzyki zwykle słucha opisu głosu, ale nie zawsze. Spróbuj innego seeda.</li>
+      </ul>
+      <h3>O programie</h3>
+      <ul>
+        <li>Song Generator tworzy teksty i muzykę lokalnie na Twoim komputerze: tekst pisze Gemma 4, muzykę ACE-Step 1.5, całością zarządza KoboldCpp.</li>
+        <li>Autor: Tomasz Masłowski (toevi / tmfgroup). Kod na licencji MIT, otwarty dla wszystkich.</li>
+        <li>Składniki zewnętrzne mają własne licencje: KoboldCpp (AGPL-3.0), Gemma 4 (Apache 2.0), ACE-Step 1.5 (MIT), pywebview (BSD-3-Clause). Szczegóły w pliku THIRD_PARTY_LICENSES.md.</li>
+        <li>Utwory powstają z pomocą AI. Publikując je, zaznacz, że treść została wygenerowana z pomocą AI, i nie proś o naśladowanie konkretnego wykonawcy.</li>
+        <li><span>Wersja</span> <span id="aboutVer">?</span></li>
+      </ul>
+    </div>
+  </section>
+  <!-- help:end -->
 </main>
 
 <script>
@@ -333,6 +399,7 @@ const store = {
 // ---- views: Music (default) and Models (the gear button toggles)
 function showView(v) {
   $('gearBtn').classList.toggle('active', v === 'models');
+  $('helpBtn').classList.toggle('active', v === 'help');
   document.querySelectorAll('.view').forEach(s => s.classList.toggle('active', s.id === 'view-' + v));
   $('toolbar').hidden = v !== 'music';
   if (v === 'models') loadModels();
@@ -350,6 +417,7 @@ $('monBtn').onclick = () => {
   if (api && api.open_monitor) api.open_monitor();
   else window.open('/monitor', 'sgmon', 'width=320,height=520');  // browser fallback
 };
+$('helpBtn').onclick = () => showView($('view-help').classList.contains('active') ? 'music' : 'help');
 $('gearBtn').onclick = () => showView($('view-models').classList.contains('active') ? 'music' : 'models');
 
 // ---- models: loaded profile, VRAM, profile chips in the header
@@ -413,6 +481,7 @@ async function refreshStatus() {
   try {
     const s = await (await fetch('/api/status')).json();
     lastStatus = s;
+    if (s.version && $('aboutVer')) $('aboutVer').textContent = s.version;
     syncLoad(s.apply);
     if (s.apply && s.apply.running) {
       dot.style.background = 'var(--warn)';
@@ -1133,6 +1202,7 @@ LYR_TAGS.forEach(([name, tags], k) => {
 
 showView('music');
 refreshStatus();
+if (location.hash === '#help') showView('help');
 setInterval(refreshStatus, 5000);
 fetch('/api/apply').then(r => r.json()).then(a => { if (a.running) pollApply(); }).catch(() => {});
 </script>

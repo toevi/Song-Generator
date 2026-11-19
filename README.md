@@ -42,6 +42,12 @@ Drugie uruchomienie przy działającej aplikacji wynosi jej okno na wierzch.
 Dodatkowe pokrętła: **BPM** (puste = tempo gatunku), **Kroki** dyfuzji 4–50 (więcej = dokładniej, wolniej;
 domyślnie 8), **Seed** (`-1` = losowo; ten sam seed i opis dają ten sam utwór), **Wyciszenie na końcu**.
 
+### Pomoc (?)
+
+Przycisk **?** w nagłówku otwiera pomoc w aplikacji: szybki start, tekst piosenki, pokrętła, modele, okienko
+monitora, zapisywanie, rozwiązywanie problemów i „O programie” (wersja, autor, licencje). Treść jest w
+`app\ui\index.html` (sekcja `view-help`), tłumaczenie w `app\ui\i18n.js`; wersja pochodzi z `app\app.json`.
+
 ### Język interfejsu
 
 Polski albo angielski: lista w nagłówku (obok 📊 i ⚙). Wybór jest zapamiętany; przy pierwszym uruchomieniu

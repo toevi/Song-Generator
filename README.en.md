@@ -42,6 +42,12 @@ Starting it a second time while it is already running brings the existing window
 Extra controls: **BPM** (empty = the genre's tempo), diffusion **Steps** 4–50 (more = more accurate, slower;
 default 8), **Seed** (`-1` = random; the same seed and description give the same track), **Fade out at the end**.
 
+### Help (?)
+
+The **?** button in the header opens the in-app help: quick start, lyrics, controls, models, the monitor window,
+saving, troubleshooting and "About" (version, author, licences). The text is in `app\ui\index.html` (the
+`view-help` section), the translation in `app\ui\i18n.js`; the version comes from `app\app.json`.
+
 ### Interface language
 
 Polish or English: the list in the header (next to 📊 and ⚙). The choice is remembered; on first start the system
