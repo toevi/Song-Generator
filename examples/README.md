@@ -73,6 +73,8 @@ klaski w bridge'u) wygenerowany w dwóch gatunkach. Zmieniało się tylko pole *
 The same caveat applies: every take comes out differently, and the model reads the tags loosely.
 Obowiązuje ta sama uwaga: każde podejście wychodzi inaczej, a model czyta znaczniki swobodnie.
 
-Metal is left out on purpose: in the take we tried the vocals did not come through at all, which shows how loosely the
-model follows the lyrics in the heaviest genres. / Metal pominięto celowo: w wypróbowanym podejściu wokal w ogóle się
-nie pojawił, co pokazuje, jak swobodnie model traktuje tekst w najcięższych gatunkach.
+**The style description matters / Opis stylu ma znaczenie.** With the Style description field empty the model often makes only a
+weak backing track, especially in heavy genres. A few words are enough — for metal, `metal lata 90` (90s metal) brought the
+vocals in. Keep the field filled in.
+Przy pustym polu „Opis stylu” model często robi tylko słaby podkład, zwłaszcza w ciężkich gatunkach. Wystarczy kilka słów —
+w metalu pomogło `metal lata 90`. Nie zostawiaj tego pola pustego.
