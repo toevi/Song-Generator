@@ -15,6 +15,12 @@ napisze tekst i skomponuje utwór. Wszystko działa **na twoim komputerze**: bez
 
 <img src="docs/monitor-pl.png" alt="Okienko podglądu: GPU, CPU, RAM, wentylatory" width="320">
 
+### Przykłady
+
+Gotowe ustawienia i tekst do wklejenia: [`examples\`](examples/README.md) (na początek disco z okrzykami chóru).
+
+![Przykład: disco z okrzykami](docs/example-disco.png)
+
 ### Film
 
 [![Song Generator na YouTube](https://img.youtube.com/vi/_ENoNxXPGgs/hqdefault.jpg)](https://youtu.be/_ENoNxXPGgs)

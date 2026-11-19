@@ -15,6 +15,12 @@ the lyrics and composes the track. Everything runs **on your own computer**: no 
 
 <img src="docs/monitor-en.png" alt="Monitor window: GPU, CPU, RAM, fans" width="320">
 
+### Examples
+
+Ready-made settings and lyrics to paste: [`examples\`](examples/README.md) (to start with, disco with choir shouts).
+
+![Example: disco with shouts](docs/example-disco.png)
+
 ### Video
 
 [![Song Generator on YouTube](https://img.youtube.com/vi/_ENoNxXPGgs/hqdefault.jpg)](https://youtu.be/_ENoNxXPGgs)
