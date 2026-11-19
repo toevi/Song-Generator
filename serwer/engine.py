@@ -29,7 +29,24 @@ LOCK = threading.Lock()
 
 ENSURE_OK, ENSURE_FAIL, ENSURE_BUSY = 0, 1, 2
 # Ładowanie profilu z panelu w tle: jedno naraz, log dla UI.
-APPLY = {"running": False, "name": "", "code": None, "log": []}
+APPLY = {"running": False, "name": "", "code": None, "log": [], "started": 0.0, "expected": 0.0}
+TIMES_PATH = HERE / "czasy_ladowania.json"      # ostatni zmierzony czas ładowania każdego profilu (s)
+DEFAULT_LOAD_S = 40
+
+
+def _load_times():
+    try:
+        return json.loads(TIMES_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def apply_state():
+    """APPLY dla UI + upłynięty czas. KoboldCpp nie podaje procentu ładowania, więc pasek w UI
+    jest szacunkiem: upłynięty czas względem czasu poprzedniego ładowania tego profilu."""
+    st = dict(APPLY)
+    st["elapsed"] = round(time.monotonic() - APPLY["started"], 1) if APPLY["running"] else 0
+    return st
 
 
 # ---------------------------------------------------------------- konfiguracja
@@ -362,11 +379,20 @@ def start_apply(name):
         return {"ok": False, "error": f"Trwa już ładowanie '{APPLY['name']}'."}
     if name not in profiles():
         return {"ok": False, "error": "Nie ma takiego profilu."}
-    APPLY.update(running=True, name=name, code=None, log=[])
+    t0 = time.monotonic()
+    APPLY.update(running=True, name=name, code=None, log=[], started=t0,
+                 expected=_load_times().get(name, DEFAULT_LOAD_S))
 
     def work():
         try:
             APPLY["code"] = ensure(name, hidden=True, replace=True, force=True)
+            if APPLY["code"] == ENSURE_OK:
+                times = _load_times()
+                times[name] = round(time.monotonic() - t0, 1)
+                try:
+                    TIMES_PATH.write_text(json.dumps(times, indent=2) + "\n", encoding="utf-8")
+                except OSError:
+                    pass
         except Exception as e:  # noqa: BLE001 - raportujemy zamiast umierać po cichu w wątku
             APPLY["log"].append(f"Błąd: {e}")
             APPLY["code"] = ENSURE_FAIL

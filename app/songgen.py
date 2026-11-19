@@ -85,7 +85,8 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/api/status":
             UI["last_poll"] = time.monotonic()
             st = E.status()
-            st["apply"] = {k: E.APPLY[k] for k in ("running", "name", "code")}
+            a = E.apply_state()
+            st["apply"] = {k: a[k] for k in ("running", "name", "code", "elapsed", "expected")}
             if st["online"]:
                 st["profile"] = E.running_profile(st)
                 st.update(E.capabilities())
@@ -93,7 +94,7 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/api/models":
             self._json(200, E.overview())
         elif path == "/api/apply":
-            self._json(200, dict(E.APPLY))
+            self._json(200, E.apply_state())
         else:
             self._json(404, {"error": "not found"})
 

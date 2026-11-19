@@ -8,6 +8,7 @@ modele/*
 !modele/README.md
 serwer/koboldcpp.exe
 serwer/admin/
+serwer/czasy_ladowania.json
 
 # Profil okna pywebview (localStorage)
 app/.okno/
