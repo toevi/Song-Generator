@@ -58,17 +58,18 @@ a few seeds. A bracketed `(Clap your hands!)` is a choir shout, not clapping.
 Oficjalny przewodnik nie wymienia klaskania, więc obie sekcje to eksperyment: dopisz `hand claps, rhythmic clapping`
 do **opisu stylu** i wypróbuj kilka seedów. `(Clap your hands!)` w nawiasie to okrzyk chóru, nie klaskanie.
 
-## Same song in two rock genres / Ten sam utwór w dwóch gatunkach rocka
+## Same song in three rock genres / Ten sam utwór w trzech gatunkach rocka
 
 The lyrics in [`rock-claps.txt`](rock-claps.txt) (guitar and bass solos, a male-vocal-and-male-choir duet answer after each
-chorus, claps in the bridge) rendered in two genres. Only the **Genre** field changed; the text is the same.
+chorus, claps in the bridge) rendered in three genres. Only the **Genre** field changed; the text is the same.
 Tekst [`rock-claps.txt`](rock-claps.txt) (solówki gitary i basu, „duet” męski głos + męski chór po każdym refrenie,
-klaski w bridge'u) wygenerowany w dwóch gatunkach. Zmieniało się tylko pole **Gatunek**; tekst jest ten sam.
+klaski w bridge'u) wygenerowany w trzech gatunkach. Zmieniało się tylko pole **Gatunek**; tekst jest ten sam.
 
 | Genre / Gatunek | Sample / Próbka | Size / Rozmiar |
 |---|---|---|
 | Soft rock | [`blask-nocy-soft-rock.mp3`](blask-nocy-soft-rock.mp3) | 4.1 MB |
 | Hard rock | [`blask-nocy-hard-rock.mp3`](blask-nocy-hard-rock.mp3) | 4.1 MB |
+| Metal (style description: `metal lata 90`) | [`blask-nocy-metal.mp3`](blask-nocy-metal.mp3) | 4.1 MB |
 
 The same caveat applies: every take comes out differently, and the model reads the tags loosely.
 Obowiązuje ta sama uwaga: każde podejście wychodzi inaczej, a model czyta znaczniki swobodnie.
