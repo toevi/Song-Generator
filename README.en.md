@@ -67,6 +67,12 @@ modele\   .gguf model files (not in git)
 
 Engine, profile and indicator details: `serwer\README.md`. Plan and early decisions: `PLAN.md`.
 
+## Author and licence
+
+Author: **Tomasz Masłowski** (toevi / tmfgroup). The code is **MIT**-licensed (`LICENSE`), open to everyone:
+use it, change it and share it. External components (KoboldCpp — AGPL-3.0, pywebview, HWiNFO) are not part of
+the repo and keep their own licences: `THIRD_PARTY_LICENSES.md`.
+
 ## Model licences
 
 Gemma 4 12B — Apache 2.0, ACE-Step 1.5 — MIT (commercial use allowed). Tracks are made with the help of AI;

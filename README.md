@@ -67,6 +67,12 @@ modele\   pliki .gguf (poza gitem)
 
 Szczegóły silnika, profili i wskaźników: `serwer\README.md`. Plan i decyzje z początku projektu: `PLAN.md`.
 
+## Autor i licencja
+
+Autor: **Tomasz Masłowski** (toevi / tmfgroup). Kod na licencji **MIT** (`LICENSE`), otwarty dla wszystkich:
+możesz go używać, zmieniać i rozpowszechniać. Składniki zewnętrzne (KoboldCpp — AGPL-3.0, pywebview, HWiNFO) nie
+są częścią repo i mają własne licencje: `THIRD_PARTY_LICENSES.md`.
+
 ## Licencje modeli
 
 Gemma 4 12B — Apache 2.0, ACE-Step 1.5 — MIT (użycie komercyjne dozwolone). Utwory powstają z pomocą AI; przy
