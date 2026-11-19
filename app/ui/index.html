@@ -130,7 +130,8 @@
   .bar > div { height: 100%; background: var(--accent); }
   .lprog { display: inline-block; width: 90px; height: 6px; border-radius: 3px; background: var(--bg);
            border: 1px solid var(--line); overflow: hidden; vertical-align: middle; margin-left: 8px; }
-  .lprog[hidden] { display: none; }
+  .lprog[hidden], #lspin[hidden] { display: none; }
+  #lspin { margin: 0 0 0 8px; }
   .lprog > i { display: block; height: 100%; width: 0; background: var(--warn); transition: width .25s linear; }
   #applyBar { margin-top: 8px; }
   #applyBar[hidden] { display: none; }
@@ -155,7 +156,7 @@
   <div class="hrow">
     <h1><span class="note">♪</span>Song Generator</h1>
     <div id="profChips"></div>
-    <div id="status"><span class="dot"></span><span id="statusText">sprawdzam model…</span><span class="lprog" id="lprog" hidden><i></i></span><span class="hint" id="vramText"></span></div>
+    <div id="status"><span class="dot"></span><span id="statusText">sprawdzam model…</span><span class="spin" id="lspin" hidden></span><span class="lprog" id="lprog" hidden><i></i></span><span class="hint" id="vramText"></span></div>
     <button class="gear" id="gearBtn" title="Modele i ustawienia">⚙</button>
   </div>
   <div class="toolbar" id="toolbar">
@@ -377,7 +378,7 @@ function paintLoad() {
   if (!loadSync) return;
   const e = loadSync.elapsed + (performance.now() - loadSync.at) / 1000, exp = loadSync.expected;
   const pct = Math.round(loadFraction(e, exp) * 100);
-  $('lprog').hidden = false; $('lprog').firstElementChild.style.width = pct + '%';
+  $('lspin').hidden = false; $('lprog').hidden = false; $('lprog').firstElementChild.style.width = pct + '%';
   $('applyBar').hidden = false; $('applyBar').firstElementChild.style.width = pct + '%';
   const over = e > exp * 1.1;
   $('statusText').textContent = `ładuję profil ${loadSync.name}… ${pct}% · ${Math.round(e)} s` + (over ? ' (dłużej niż zwykle)' : '');
@@ -385,7 +386,7 @@ function paintLoad() {
 function startLoadTicker() { if (!loadTicker) { loadTicker = setInterval(paintLoad, 250); paintLoad(); } }
 function stopLoadTicker() {
   clearInterval(loadTicker); loadTicker = null;
-  $('lprog').hidden = true; $('applyBar').hidden = true;
+  $('lspin').hidden = true; $('lprog').hidden = true; $('applyBar').hidden = true;
 }
 
 // ---- status
