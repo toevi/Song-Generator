@@ -33,6 +33,9 @@ Zrzut powstał w trybie *tylko muzyka + okrzyki*. Ten tryb mówi modelowi „bez
 w nawiasach `( )`, a zwykłe pomija. Żeby śpiewał też zwykłe wersy, wybierz **chór** (albo duet) w polu Wokal. Sekcje
 oznaczone `Instrumental` / `Solo` / `Break` nie powinny mieć tekstu pod spodem — aplikacja ostrzega o tym przed generowaniem.
 
+**Listen / Posłuchaj:** [`blask-nocy-5.mp3`](blask-nocy-5.mp3) — take no. 5 of this track (3 min, 4.1 MB). The result varies a lot from take to take (seed, steps, how the model reads the tags), so do not expect an identical track; the sample only shows what the model can produce. Generated with the help of AI (ACE-Step 1.5).
+**Posłuchaj:** [`blask-nocy-5.mp3`](blask-nocy-5.mp3) — podejście nr 5 tego utworu (3 min, 4,1 MB). Wynik bardzo się różni między podejściami (seed, kroki, sposób odczytania znaczników), więc nie licz na identyczny utwór; próbka pokazuje tylko, co model potrafi. Utwór wygenerowany z pomocą AI (ACE-Step 1.5).
+
 How to use / Jak użyć: pick the settings above (Vocals: choir), paste `disco-chants.txt` into the lyrics field, click
 **Generate music** / ustaw powyższe (Wokal: chór), wklej `disco-chants.txt` w pole tekstu, kliknij **Generuj muzykę**.
 Note: in the "music + choir shouts" mode Gemma does not write lyrics — you enter them yourself
