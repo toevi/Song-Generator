@@ -81,3 +81,18 @@ loosely, and results vary from take to take. A few words of style are still wort
 Bez opisu stylu model robi zwykle słabszy, bardziej ogólny utwór, a w pierwszym metalu wokal się nie pojawił. Powtórka z pustym
 polem (ten sam tekst i ustawienia) jednak zaśpiewała, tylko później w utworze, więc opis **nie** decyduje o tym, czy będzie
 wokal: model robi to swobodnie, a wyniki różnią się między podejściami. Kilka słów stylu warto dopisać, bo kierują brzmieniem.
+
+## Disco duet, lyrics written by the app / Disco duet, tekst napisany przez aplikację
+
+The simplest way to use the app: no lyrics of your own, only a genre and a short description. Gemma wrote the lyrics, ACE-Step made the music.
+Najprostszy sposób użycia: bez własnego tekstu, tylko gatunek i krótki opis. Tekst napisała Gemma, muzykę ACE-Step.
+
+| Field / Pole | Value / Wartość |
+|---|---|
+| Genre / Gatunek | Disco |
+| Vocals / Wokal | male and female duet / duet kobieta + mężczyzna |
+| Style description / Opis stylu | `disco dance track about a summer Saturday night in San Francisco, fast, 80s` |
+| Lyrics / Tekst | left empty — Gemma writes them / puste — pisze Gemma |
+
+**Listen / Posłuchaj:** [`disco-san-francisco.mp3`](disco-san-francisco.mp3) (4.1 MB). The lyrics are different on every run, so there is no text file for this one.
+Tekst za każdym razem wychodzi inny, więc dla tego przykładu nie ma pliku z tekstem.
