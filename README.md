@@ -11,6 +11,10 @@ napisze tekst i skomponuje utwór. Wszystko działa **na twoim komputerze**: bez
   włoskim, niemieckim, hiszpańskim lub francuskim, albo sam podkład.
 - **Silnik:** KoboldCpp (CUDA), uruchamiany i przełączany przez aplikację — nie trzeba go obsługiwać ręcznie.
 
+![Song Generator: okno główne](docs/screenshot-pl.png)
+
+<img src="docs/monitor-pl.png" alt="Okienko podglądu: GPU, CPU, RAM, wentylatory" width="320">
+
 ## Wymagania
 
 - Windows 10/11, karta NVIDIA z CUDA. Sprawdzone na **RTX 4070 12 GB** (Gemma i ACE-Step nie mieszczą się

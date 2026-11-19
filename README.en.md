@@ -11,6 +11,10 @@ the lyrics and composes the track. Everything runs **on your own computer**: no 
   Italian, German, Spanish or French, or as an instrumental.
 - **Engine:** KoboldCpp (CUDA), started and switched by the app — you never have to operate it by hand.
 
+![Song Generator: main window](docs/screenshot-en.png)
+
+<img src="docs/monitor-en.png" alt="Monitor window: GPU, CPU, RAM, fans" width="320">
+
 ## Requirements
 
 - Windows 10/11 and an NVIDIA GPU with CUDA. Tested on an **RTX 4070 12 GB** (Gemma and ACE-Step do not fit
