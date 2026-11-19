@@ -11,8 +11,6 @@ napisze tekst i skomponuje utwór. Wszystko działa **na twoim komputerze**: bez
   włoskim, niemieckim, hiszpańskim lub francuskim, albo sam podkład.
 - **Silnik:** KoboldCpp (CUDA), uruchamiany i przełączany przez aplikację — nie trzeba go obsługiwać ręcznie.
 
-
-
 ## Wymagania
 
 - Windows 10/11, karta NVIDIA z CUDA. Sprawdzone na **RTX 4070 12 GB** (Gemma i ACE-Step nie mieszczą się
