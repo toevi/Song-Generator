@@ -8,6 +8,7 @@ Modelami zarządza serwer\\engine.py; tu tylko HTTP, zapis plików i okno. Tylko
 """
 import base64
 import json
+import os
 import sys
 import threading
 import time
@@ -32,6 +33,7 @@ CONFIG_PATH = BASE / "app.json"
 MAX_BODY = 32 * 2**20
 UI = {"last_poll": 0.0, "bye": 0.0}
 BYE_GRACE_S = 15
+WINDOWS_DONE = threading.Event()  # ustawiane, gdy webview.start wróci (wszystkie okna zamknięte)
 
 
 def app_config():
@@ -307,14 +309,24 @@ def run_webview(url):
     api._window = webview.create_window("Song Generator", url, width=1400, height=900, min_size=(900, 600),
                                         js_api=api)
 
-    def _close_monitor():  # webview.start wraca dopiero po zamknięciu WSZYSTKICH okien
-        try:
-            if api._monitor is not None:
-                api._monitor.destroy()
-        except Exception:  # noqa: BLE001
-            pass
-    api._window.events.closed += _close_monitor
+    def _close_others():  # webview.start wraca dopiero po zamknięciu WSZYSTKICH okien
+        for w in list(webview.windows):
+            if w is not api._window:
+                try:
+                    w.destroy()
+                except Exception:  # noqa: BLE001
+                    pass
+
+        def watchdog():  # okienko podglądu nie może zostawić procesu z zajętym portem (stąd widok w przeglądarce)
+            if WINDOWS_DONE.wait(6):
+                return  # okna zamknięte normalnie
+            print("Okna nie zamknęły się - kończę proces.")
+            E.release_gpu(wait=False)
+            os._exit(0)
+        threading.Thread(target=watchdog, daemon=True).start()
+    api._window.events.closed += _close_others
     webview.start(private_mode=False, storage_path=str(WEBVIEW_DIR), icon=str(UI_DIR / "icon.ico"))
+    WINDOWS_DONE.set()
 
 
 def _on_console_close(action):
