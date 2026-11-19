@@ -1,0 +1,38 @@
+Endpointy używane przez app/ui/index.html (kontrakt z backendem; nazwy jak w Little Mate)
+==========================================================================================
+Pliki statyczne
+  GET  /                    index.html
+  GET  /icon.png            ikona strony (favicon); icon.ico - ikona okna pywebview
+  (i18n.js usunięty - UI tylko po polsku, nie wołać /i18n.js ani /api/lang)
+
+Status i modele
+  GET  /api/status          -> {online, busy, model, profile, context, unloaded, error?,
+                                apply:{running,name,code}}   (odpytywane co 5 s)
+  GET  /api/models          -> {online, unloaded, active, running_model, context,
+                                gpu:{name,total,used}|null, dirs:[...], files:[{name,kind,quant,size,...}],
+                                profiles:{<nazwa>:{profile:{model,context,musicdit,note,...}, vram, missing:[...]}}}
+  GET  /api/apply           -> {running, name, code, log:[...]}   (code 0 ok, 2 = model zajęty)
+  POST /api/apply           {name}  -> {ok, error?}   ładuje profil (gemma / muzyka)
+  POST /api/prepare         {need: "text"|"music"} -> {ok, ready}|{ok, switching:<profil>}|{ok:false, error}
+  POST /api/unload          {} -> {ok, error}   zwalnia kartę
+  POST /api/bye             {} -> {ok}   wysyłane przy zamknięciu okna (pagehide, keepalive)
+
+Muzyka i tekst
+  POST /api/music           {prompt (caption po angielsku), duration, bpm, format:"mp3"|"wav",
+                             seed, steps, [lyrics, vocal_language, voice]}
+                            -> audio (bajty) + nagłówek X-Music-Plan (URL-encoded JSON:
+                               caption,bpm,keyscale,timesignature,duration,seed); błąd: JSON {error}
+                            UWAGA: "steps" jest NOWE w UI (backend czyta je już jako req["steps"], 4-50, domyślnie 8)
+  POST /api/lyrics          {theme, lang, duration, skeleton} -> {ok, text, title}|{ok:false, error}
+  POST /api/lyrics/fit      {skeleton, text, lang} -> {ok, text, extra_lines, foreign}|{ok:false, error}
+  POST /api/translate       {text, jezyk:"angielski"} -> {ok, text}|{ok:false, error}   (opis stylu -> angielski)
+
+Zapis plików (pywebview, klasa SaveApi w oknie; poza HTTP)
+  window.pywebview.api.save(name, kind, dataUrl)               -> {ok, cancel?, error?}   kind: "mp3"|"wav"
+  window.pywebview.api.pick_folder(firstName, kind)            -> {ok, cancel?, name, path, error?}
+  window.pywebview.api.save_in_folder(name, kind, dataUrl)     -> {ok, error?}
+  Bez pywebview (przeglądarka): showSaveFilePicker / showDirectoryPicker / <a download>.
+
+Nieużywane już przez UI (backend może je usunąć): /api/tasks, /api/run, /api/chat, /api/abort,
+/api/execute, /api/save, /api/mail, /api/transcribe, /api/image, /api/video/*, /api/lang,
+/api/profile, /api/profile/delete, /api/default, /api/estimate.

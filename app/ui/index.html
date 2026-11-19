@@ -1,0 +1,1085 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Song Generator</title>
+<link rel="icon" href="/icon.png">
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --text: #1d2330; --muted: #6b7385; --line: #dde1e8;
+    --accent: #6d4fd8; --accent-text: #ffffff; --ok: #1f9d55; --bad: #d64545; --warn: #d69e2e;
+    --code: #f0f2f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171d; --panel: #1c2028; --text: #e4e7ee; --muted: #8b93a5; --line: #2c323e;
+      --accent: #9378f0; --accent-text: #0e1116; --ok: #3cc47c; --bad: #f06b6b; --warn: #e8b84a;
+      --code: #232833;
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }  /* .form > div sets display:flex, which would beat the attribute */
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); display: flex; flex-direction: column;
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+  /* ---- header: title + profile + status on the first row, music settings on the second */
+  header { padding: 8px 16px; border-bottom: 1px solid var(--line); background: var(--panel);
+           display: flex; flex-direction: column; gap: 8px; }
+  .hrow { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  header h1 { font-size: 17px; margin: 0; letter-spacing: .3px; display: flex; align-items: center; gap: 8px; }
+  header h1 .note { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 7px;
+                    color: #fff; font-size: 16px; line-height: 1; background: linear-gradient(160deg, #7c3aed, #0ea5e9); }
+  #profChips { display: flex; gap: 6px; }
+  .pchip { font: inherit; font-size: 13px; padding: 2px 12px; border-radius: 14px; cursor: pointer;
+           border: 1px solid var(--line); background: none; color: var(--muted); }
+  .pchip.active { border-color: var(--ok); color: var(--ok); font-weight: 600; }
+  .pchip.loading { border-color: var(--warn); color: var(--warn); animation: pulse 1.2s ease-in-out infinite; }
+  .pchip:disabled { cursor: default; }
+  @keyframes pulse { 50% { opacity: .45; } }
+  #status { margin-left: auto; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  #status .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+  .gear { background: none; border: 1px solid transparent; color: var(--muted); font-size: 18px; line-height: 1;
+          padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+  .gear.active { border-color: var(--line); color: var(--text); background: var(--bg); }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; }
+  .toolbar .tf { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .toolbar label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .toolbar select, .toolbar input[type=number] { width: auto; padding: 4px 8px; font-size: 14px; }
+  .toolbar #musBpm, .toolbar #musSteps { width: 74px; }
+  .toolbar #musSeed { width: 100px; }
+  .toolbar .tcheck { flex-direction: row; align-items: center; gap: 5px; padding-bottom: 6px; }
+  .toolbar .tcheck label { font-size: 13px; color: var(--text); }
+  .toolbar .tcheck input { width: auto; }
+  #musInfo { flex: 1 1 260px; min-width: 200px; font-size: 13px; color: var(--muted); padding-bottom: 5px; }
+
+  /* The page fills the window: maximising or resizing grows the work areas, not just the margins. */
+  main { flex: 1; min-height: 0; width: 100%; max-width: 1800px; margin: 0 auto; padding: 16px;
+         display: flex; flex-direction: column; overflow: auto; }
+  .view { display: none; } .view.active { display: flex; flex-direction: column; flex: 1 0 auto; gap: 16px; }
+  #view-music.active { flex: 1 1 0; min-height: 420px; }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px;
+          display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  label { font-size: 13px; color: var(--muted); }
+  select, input, textarea { width: 100%; font: inherit; color: var(--text); background: var(--bg);
+                            border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+  textarea { resize: vertical; min-height: 120px; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  button.primary, button.ghost { font: inherit; border-radius: 6px; padding: 7px 16px; cursor: pointer; }
+  button.primary { background: var(--accent); color: var(--accent-text); border: 1px solid var(--accent); }
+  button.ghost { background: none; color: var(--text); border: 1px solid var(--line); }
+  button.danger { background: var(--bad); border-color: var(--bad); color: #fff; }
+  button.small { padding: 3px 10px; font-size: 13px; }
+  button:disabled { opacity: .5; cursor: default; }
+  .hint { font-size: 12px; color: var(--muted); }
+  .err { color: var(--bad); }
+  .spin { display: inline-block; width: 14px; height: 14px; margin-right: 8px; vertical-align: -2px;
+          border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%;
+          animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---- music: text | player + tracks, each column scrolls on its own */
+  .musgrid { flex: 1; min-height: 0; display: grid; gap: 16px; grid-template-columns: minmax(380px, 1.5fr) minmax(320px, 1fr); }
+  .musgrid > .card { min-height: 0; overflow: auto; }
+  .muslyr .musbody { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+  #musLyrics { flex: 1; min-height: 260px; resize: none; }
+  #musPrompt { min-height: 50px; }
+  .muslyr .musnovocal { margin: auto; text-align: center; max-width: 320px; }
+  .mustracks #musHistory { flex: 1; min-height: 120px; }
+  .lyrbar #musTagBtns { display: contents; }
+  #musSelBar { display: contents; }
+  @media (max-width: 900px) {
+    .musgrid { grid-template-columns: 1fr; }
+    #view-music.active { flex: 1 0 auto; } .musgrid > .card { overflow: visible; }
+  }
+  .mlist { display: flex; flex-direction: column; overflow: auto; flex: 1; min-height: 200px; }
+  .mitem { padding: 6px 8px; border-bottom: 1px solid var(--line); cursor: pointer; display: grid;
+           grid-template-columns: 110px 1fr; gap: 2px 10px; font-size: 14px; }
+  .mitem:hover, .mitem.sel { background: var(--bg); }
+  .mitem .d { color: var(--muted); font-size: 12px; }
+  .mitem .f { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #musResult { display: flex; flex-direction: column; gap: 8px; justify-content: center; min-height: 120px;
+               background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+  #musResult audio { width: 100%; }
+  #musHistory .mitem { grid-template-columns: auto 1fr auto auto; align-items: center; gap: 8px; }
+  #musHistory .mitem input { margin: 0; width: 16px; height: 16px; }
+  #musHistory .mitem .x { padding: 0 6px; line-height: 18px; border: 0; border-radius: 4px; background: none;
+                          color: var(--muted); cursor: pointer; visibility: hidden; }
+  #musHistory .mitem:hover .x { visibility: visible; }
+  #musHistory .mitem.on { background: var(--bg); }
+  .ctx { position: fixed; z-index: 60; min-width: 190px; background: var(--panel); border: 1px solid var(--line);
+         border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.35); padding: 4px 0; font-size: 13px; }
+  .ctx .it { padding: 5px 14px; cursor: pointer; white-space: nowrap; position: relative; }
+  .ctx .it:hover { background: var(--accent); color: var(--accent-text); }
+  .ctx .it.grp::after { content: "▸"; position: absolute; right: 8px; }
+  .ctx .sub { display: none; position: absolute; left: 100%; top: -5px; max-height: 80vh; overflow-y: auto; }
+  .ctx .sub.left { left: auto; right: 100%; }
+  .ctx .sub.up { top: auto; bottom: -5px; }
+  .ctx .it.grp:hover > .sub { display: block; }
+  .ctx .sub .it { color: var(--text); } .ctx .sub .it:hover { color: var(--accent-text); }
+  .ctx .note { padding: 5px 14px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); margin-top: 4px; }
+  .ctx.dd { overflow-y: auto; }
+
+  /* ---- models panel */
+  .mgrid { display: grid; grid-template-columns: minmax(300px, 1fr) minmax(320px, 1.4fr); gap: 16px; }
+  @media (max-width: 900px) { .mgrid { grid-template-columns: 1fr; } }
+  .bar { height: 10px; border-radius: 5px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
+  .bar > div { height: 100%; background: var(--accent); }
+  .bar.over > div { background: var(--bad); }
+  .prof { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .prof.active { border-color: var(--ok); }
+  .prof h3 { margin: 0; font-size: 15px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .badge { font-size: 11px; border-radius: 10px; padding: 1px 8px; border: 1px solid var(--line); color: var(--muted); font-weight: normal; }
+  .badge.ok { border-color: var(--ok); color: var(--ok); }
+  .badge.warn { border-color: var(--warn); color: var(--warn); }
+  .badge.bad { border-color: var(--bad); color: var(--bad); }
+  .files { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .files td, .files th { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); }
+  .files th { color: var(--muted); font-weight: normal; }
+  .log { font: 12px/1.4 ui-monospace, Consolas, monospace; white-space: pre-wrap; background: var(--bg);
+         border: 1px solid var(--line); border-radius: 6px; padding: 8px; max-height: 160px; overflow: auto; }
+  .log:empty { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1><span class="note">♪</span>Song Generator</h1>
+    <div id="profChips"></div>
+    <div id="status"><span class="dot"></span><span id="statusText">sprawdzam model…</span><span class="hint" id="vramText"></span></div>
+    <button class="gear" id="gearBtn" title="Modele i ustawienia">⚙</button>
+  </div>
+  <div class="toolbar" id="toolbar">
+    <div class="tf"><label for="musGenre">Gatunek</label>
+      <select id="musGenre">
+      <option value="">(dowolny)</option>
+      <option value="pop, catchy melody, polished modern production" data-bpm="112">Pop</option>
+      <option value="rock, driving rhythm, distorted electric guitars, energetic" data-bpm="128">Rock</option>
+      <option value="soft rock, mellow, clean guitars, warm, laid-back groove" data-bpm="96">Soft rock</option>
+      <option value="hard rock, heavy riffs, powerful drums, raw energy" data-bpm="140">Hard rock</option>
+      <option value="heavy metal, fast palm-muted riffs, double bass drums, aggressive" data-bpm="160">Metal</option>
+      <option value="blues, shuffle rhythm, expressive guitar licks, soulful" data-bpm="90">Blues</option>
+      <option value="jazz, swing feel, improvised solos, sophisticated harmony" data-bpm="120">Jazz</option>
+      <option value="smooth jazz, mellow saxophone, soft electric piano, relaxed groove" data-bpm="92">Smooth jazz</option>
+      <option value="swing, big band, brass section, walking bass, lively" data-bpm="150">Swing / big band</option>
+      <option value="funk, tight syncopated groove, slap bass, rhythmic guitar" data-bpm="108">Funk</option>
+      <option value="soul, R&amp;B, smooth groove, warm keys, emotional" data-bpm="85">Soul / R&amp;B</option>
+      <option value="disco, four-on-the-floor, funky bass, strings, groovy" data-bpm="120">Disco</option>
+      <option value="hip hop beat, boom bap drums, deep bass, samples" data-bpm="90">Hip-hop</option>
+      <option value="lo-fi hip hop, mellow beat, vinyl crackle, soft keys, relaxed" data-bpm="80">Lo-fi</option>
+      <option value="reggae, offbeat guitar skank, deep bass, laid-back" data-bpm="75">Reggae</option>
+      <option value="latin, salsa rhythm, congas, piano montuno, brass" data-bpm="100">Latin</option>
+      <option value="country, twangy guitars, steady beat, Americana" data-bpm="110">Country</option>
+      <option value="folk, acoustic, lively countryside feel" data-bpm="120">Folk</option>
+      <option value="classical music, elegant, orchestral composition" data-bpm="90">Muzyka klasyczna</option>
+      <option value="epic cinematic soundtrack, big drums, rising strings, powerful" data-bpm="100">Filmowa / epicka</option>
+      <option value="ambient, atmospheric pads, slow evolving textures, calm, spacious" data-bpm="70">Ambient</option>
+      <option value="chillout, downtempo, relaxed, soft electronic textures" data-bpm="95">Chillout</option>
+      <option value="house music, four-on-the-floor, groovy bass, piano chords" data-bpm="124">House</option>
+      <option value="techno, hypnotic driving beat, dark synths, repetitive" data-bpm="130">Techno</option>
+      <option value="trance, euphoric synth leads, rolling bass, uplifting build-ups" data-bpm="138">Trance</option>
+      <option value="drum and bass, fast breakbeats, heavy sub bass" data-bpm="174">Drum and bass</option>
+      <option value="synthwave, retro 80s synthesizers, gated drums, nostalgic" data-bpm="100">Synthwave</option>
+      <option value="corporate background music, light percussion, positive and motivating" data-bpm="110">Firmowa / prezentacja</option>
+      </select>
+    </div>
+    <div class="tf"><label for="musStyle">Skład</label>
+      <select id="musStyle">
+      <option value="">(dowolny)</option>
+      <option value="symphony orchestra, strings, brass, woodwinds, timpani">Orkiestra symfoniczna</option>
+      <option value="string quartet, violins, viola, cello">Kwartet smyczkowy</option>
+      <option value="rock band, electric guitars, bass guitar, live drums">Zespół rockowy</option>
+      <option value="big band, trumpets, saxophones, trombones, rhythm section">Big band</option>
+      <option value="jazz trio, piano, double bass, brushed drums">Jazz trio</option>
+      <option value="electronic production, synthesizers, drum machine">Syntezatory / elektronika</option>
+      <option value="acoustic guitar and piano">Gitara i pianino</option>
+      <option value="solo piano">Pianino solo</option>
+      <option value="solo acoustic guitar, fingerstyle">Gitara akustyczna solo</option>
+      <option value="ukulele, light hand percussion">Ukulele i perkusjonalia</option>
+      </select>
+    </div>
+    <div class="tf"><label for="musVoice">Wokal</label>
+      <select id="musVoice"><option value="">bez wokalu (podkład)</option>
+        <option value="female vocals">głos kobiecy</option><option value="male vocals">głos męski</option>
+        <option value="child vocals, young voice">głos dziecięcy</option>
+        <option value="male and female duet vocals">duet kobieta + mężczyzna</option>
+        <option value="choir vocals">chór</option>
+        <option value="backing calls">tylko muzyka + okrzyki chórku</option></select></div>
+    <div class="tf vocal"><label for="musLang">Język śpiewu</label>
+      <select id="musLang"><option value="pl">polski</option><option value="en">angielski</option><option value="it">włoski</option>
+        <option value="de">niemiecki</option><option value="es">hiszpański</option><option value="fr">francuski</option></select></div>
+    <div class="tf"><label for="musLen">Długość <small id="musLenHint"></small></label>
+      <select id="musLen"><option value="30">30 s</option><option value="60">1 min</option><option value="90">1,5 min</option>
+        <option value="120" selected>2 min</option><option value="150">2,5 min</option><option value="180">3 min</option><option value="240">4 min</option>
+        <option value="300">5 min</option></select></div>
+    <div class="tf"><label for="musBpm" title="Puste = tempo gatunku albo dobór przez model. 70 = spokojnie, 120 = żwawo">Tempo (BPM)</label>
+      <input id="musBpm" type="number" min="40" max="220" placeholder="auto"></div>
+    <div class="tf"><label for="musSteps" title="Kroki dyfuzji 4–50: więcej = dokładniej, ale wolniej. Domyślnie 8">Kroki</label>
+      <input id="musSteps" type="number" min="4" max="50" value="8"></div>
+    <div class="tf"><label for="musFmt" title="MP3 – mały plik; WAV – bez strat, kilkadziesiąt MB">Format</label>
+      <select id="musFmt"><option value="mp3">MP3</option><option value="wav">WAV</option></select></div>
+    <div class="tf"><label for="musSeed" title="-1 = losowo; ten sam seed i opis = ten sam utwór">Seed</label>
+      <input id="musSeed" type="number" value="-1"></div>
+    <div class="tf tcheck"><input type="checkbox" id="musFade" checked><label for="musFade">Wyciszenie na końcu</label></div>
+    <div class="tf"><button class="primary" id="musGo">Generuj muzykę</button></div>
+    <div id="musInfo">Modele przełączają się same: Gemma pisze tekst, ACE-Step robi muzykę.</div>
+  </div>
+</header>
+
+<main>
+  <section id="view-music" class="view active">
+    <div class="musgrid">
+      <div class="card muslyr">
+        <label for="musTitle">Tytuł (nazwa pliku i listy; puste = gatunek i opis)</label>
+        <input id="musTitle" maxlength="80" placeholder="np. Letnia noc nad jeziorem">
+        <label for="musPrompt">Opis stylu – nastrój, do czego (opcjonalnie)</label>
+        <textarea id="musPrompt" rows="2" placeholder="np. spokojny podkład do filmu z gór, ciepły i optymistyczny"></textarea>
+        <div class="vocal musbody">
+          <label for="musLyrics">Tekst piosenki – znaczniki [Verse 1], [Chorus], [Bridge] (puste = Gemma napisze z opisu; prawy przycisk = wstaw znacznik)</label>
+          <textarea id="musLyrics" placeholder="[verse]&#10;Idę przez miasto o świcie&#10;...&#10;&#10;[chorus]&#10;..."></textarea>
+          <div class="row lyrbar"><button class="ghost small" id="musWrite" title="Gemma wypełnia kropki szablonu (Twoje wersy zostają); bez szablonu najpierw sam go tworzy">Gemma: wypełnij tekst</button>
+            <button class="ghost small" id="musFit" title="Gemma układa Twój gotowy tekst (pole niżej) w szablon z pola wyżej – bez dopisywania własnych słów">Dopasuj mój tekst do szablonu</button>
+            <button class="ghost small" id="musTpl" title="Wstaw szablon: wg ustawień albo ze ściągawki (zastępuje tekst, Ctrl+Z cofa)">Szablon ▾</button>
+            <span id="musTagBtns"></span></div>
+          <details id="musRawBox"><summary>Twój gotowy tekst (do dopasowania)</summary>
+            <textarea id="musRaw" rows="8" placeholder="Wklej tu tekst piosenki (z Claude, z notatek…), znaczniki niepotrzebne. Możesz zaznaczyć refren słowem „Refren:”. Potem „Dopasuj mój tekst do szablonu”."></textarea>
+          </details>
+        </div>
+        <p class="hint musnovocal">Utwór bez śpiewu. Wybierz <b>Wokal</b> na górnym pasku, żeby pisać tekst, wstawić szablon albo dopasować własny tekst.</p>
+      </div>
+      <div class="card mustracks">
+        <div id="musResult"><span class="hint">tu pojawi się utwór</span></div>
+        <div class="row">
+          <button class="ghost" id="musSave" disabled>Zapisz…</button>
+          <span id="musSelBar" hidden>
+            <button class="ghost small" id="musSelAll">Zaznacz wszystkie</button>
+            <button class="ghost small" id="musSelNone">Odznacz</button>
+            <button class="ghost small" id="musSaveSel">Zapisz wszystkie</button>
+          </span>
+        </div>
+        <div id="musHistory" class="mlist"></div>
+        <p class="hint">Utwory nie zapisują się same – historia znika po zamknięciu okna. „Zapisz…” pyta, gdzie zapisać plik.
+          Model: ACE-Step 1.5 (licencja MIT; autorzy dopuszczają użycie komercyjne, np. na YouTube). Przy wgrywaniu na YouTube
+          zaznacz, że treść powstała z pomocą AI, i nie proś o naśladowanie konkretnego wykonawcy. Wokal: tekst śpiewa model
+          muzyki, rodzaj głosu idzie do opisu stylu – model zwykle go słucha, ale nie zawsze.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-models" class="view">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div><b id="mLoaded">—</b> <span class="hint" id="mLoadedInfo"></span></div>
+        <div class="row">
+          <span class="hint" id="mMsg"></span>
+          <button class="ghost small" id="mRefresh">Odśwież</button>
+          <button class="ghost small" id="mUnload" title="Zwalnia kartę graficzną; Kobold czeka w tle na następny profil">Wyłącz model</button>
+        </div>
+      </div>
+      <div>
+        <div class="row" style="justify-content:space-between"><label id="gpuName">Karta graficzna</label><span class="hint" id="gpuText"></span></div>
+        <div class="bar" id="gpuBar"><div style="width:0"></div></div>
+      </div>
+      <div class="log" id="applyLog"></div>
+    </div>
+    <div class="mgrid">
+      <div class="card">
+        <label>Profile (jeden profil = jeden zestaw modeli w pamięci karty)</label>
+        <div id="profList" style="display:flex;flex-direction:column;gap:8px"></div>
+        <p class="hint"><b>Zwykle nic tu nie trzeba klikać:</b> „Generuj” samo ładuje potrzebny profil
+          (<code>gemma</code> – teksty, <code>muzyka</code> – ACE-Step). Oba naraz nie mieszczą się w pamięci karty,
+          więc zawsze działa jeden; przełączenie trwa 15–60 s. Jeśli model akurat generuje, przełączenie
+          się nie uda – spróbuj za chwilę. Zestawy plików zmieniasz w <code>config.json</code>.</p>
+      </div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between"><label>Pliki modeli</label><span class="hint" id="filesDirs"></span></div>
+        <div style="overflow:auto"><table class="files" id="filesTable"></table></div>
+        <p class="hint">Nowe modele wrzucaj do folderu modeli (pliki <code>.gguf</code>) i kliknij Odśwież.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt) e.textContent = txt; return e; };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const GB = b => (b / 2 ** 30).toFixed(1).replace('.', ',') + ' GB';
+const base = p => p ? p.split(/[\\/]/).pop() : '';
+const post = async (url, body) => (await fetch(url, {
+  method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json();
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+// ---- views: Music (default) and Models (the gear button toggles)
+function showView(v) {
+  $('gearBtn').classList.toggle('active', v === 'models');
+  document.querySelectorAll('.view').forEach(s => s.classList.toggle('active', s.id === 'view-' + v));
+  $('toolbar').hidden = v !== 'music';
+  if (v === 'models') loadModels();
+}
+$('gearBtn').onclick = () => showView($('view-models').classList.contains('active') ? 'music' : 'models');
+
+// ---- models: loaded profile, VRAM, profile chips in the header
+let MD = null, applyTimer = null, lastStatusKey = null, lastStatus = null;
+
+async function loadModelsData() {
+  try { MD = await (await fetch('/api/models')).json(); } catch { return false; }
+  renderChips(); renderVram();
+  return true;
+}
+function renderChips() {
+  const box = $('profChips'); box.innerHTML = '';
+  if (!MD) return;
+  const s = lastStatus || {};
+  for (const name of Object.keys(MD.profiles)) {
+    const b = mk('button', 'pchip', name);
+    const loading = s.apply && s.apply.running && s.apply.name === name;
+    const active = !loading && s.online && s.profile === name;
+    b.classList.toggle('active', active); b.classList.toggle('loading', !!loading);
+    b.disabled = active || !!(s.apply && s.apply.running) || !!MD.profiles[name].missing.length;
+    b.title = active ? 'Załadowany profil' : loading ? 'Ładuję…' : `Załaduj profil ${name}`;
+    b.onclick = () => applyProfile(name);
+    box.append(b);
+  }
+}
+function renderVram() {
+  const s = lastStatus || {}, P = MD && s.profile && MD.profiles[s.profile];
+  $('vramText').textContent = P
+    ? `· ~${GB(P.vram)}${MD.gpu ? ' z ' + GB(MD.gpu.total) : ''}${MD.gpu && P.vram > MD.gpu.total * 0.97 ? ' (część w RAM)' : ''}` : '';
+}
+
+// ---- status
+async function refreshStatus() {
+  const dot = document.querySelector('#status .dot');
+  try {
+    const s = await (await fetch('/api/status')).json();
+    lastStatus = s;
+    if (s.apply && s.apply.running) {
+      dot.style.background = 'var(--warn)';
+      $('statusText').textContent = `ładuję profil ${s.apply.name}…`;
+    } else if (s.online) {
+      dot.style.background = s.busy ? 'var(--warn)' : 'var(--ok)';
+      $('statusText').textContent = `${s.profile ? s.profile + ' · ' : ''}${s.model.replace(/^koboldcpp\//, '')}` +
+        `${s.context ? ' · ' + s.context + ' tok.' : ''}${s.busy ? ' · pracuje' : ''}`;
+    } else if (s.unloaded) {
+      dot.style.background = 'var(--muted)';
+      $('statusText').textContent = 'model wyłączony – załaduje się sam przy następnym zadaniu';
+    } else {
+      dot.style.background = 'var(--bad)';
+      $('statusText').textContent = 'model niedostępny – uruchom serwer (KoboldCpp)';
+    }
+    // Reload the profile data whenever what is loaded changes (also when something else switched it).
+    const key = [s.online, s.unloaded, s.profile, s.model, s.context, s.apply?.running].join('|');
+    if (key !== lastStatusKey || !MD) {
+      lastStatusKey = key;
+      await loadModelsData();
+      if ($('view-models').classList.contains('active')) loadModels();
+    } else renderChips();
+  } catch {
+    dot.style.background = 'var(--bad)';
+    $('statusText').textContent = 'brak połączenia z serwerem aplikacji';
+  }
+}
+// Tell the server the window is going away; it waits a few seconds (a reload polls again at once)
+// and then closes the app and frees the GPU. JSON body: plain beacons are refused as cross-site.
+addEventListener('pagehide', () => {
+  try { fetch('/api/bye', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: '{}' }); } catch {}
+});
+
+// Each job loads the profile it needs by itself (text / music); the user does not have to know
+// which models live in which profile. Returns true when the job can go ahead.
+const PROFILE_WAIT = 'przełączam na profil „{n}” (ok. 15–40 s)…';
+let preparing = false;
+async function prepare(need, show) {
+  if (preparing) return false;  // a second click while a profile is loading
+  preparing = true;
+  try { return await prepareInner(need, show); } finally { preparing = false; }
+}
+async function prepareInner(need, show) {
+  let r;
+  try { r = await post('/api/prepare', { need }); } catch (e) { show(e.message, true); return false; }
+  if (!r.ok) { show(r.error, true); return false; }
+  if (r.ready) return true;
+  show(PROFILE_WAIT.replace('{n}', r.switching));
+  refreshStatus();
+  for (;;) {
+    await new Promise(res => setTimeout(res, 1500));
+    const a = await (await fetch('/api/apply')).json();
+    if (a.running) continue;
+    refreshStatus();
+    if (a.code === 0) { show(''); return true; }
+    show(`Nie udało się załadować „${a.name}”: ${(a.log || []).slice(-1)[0] || 'błąd'}`, true);
+    return false;
+  }
+}
+
+// ---- models panel (gear)
+const KIND = { llm: 'tekst', mmproj: 'obraz/dźwięk (mmproj)', whisper: 'mowa → tekst', obraz: 'grafika', vae: 'VAE',
+               tts: 'tekst → mowa', embed: 'embeddings', inne: '?' };
+const msg = (t, bad) => { $('mMsg').textContent = t; $('mMsg').className = 'hint' + (bad ? ' err' : ''); };
+function setBar(el, used, total) {
+  el.firstElementChild.style.width = (total ? Math.min(100, used / total * 100) : 0) + '%';
+  el.classList.toggle('over', !!total && used > total * 0.97);
+}
+async function loadModels() {
+  if (!(await loadModelsData())) { msg('Nie udało się pobrać listy modeli.', true); return; }
+  $('mLoaded').textContent = MD.online ? (MD.active ? 'Profil: ' + MD.active : 'Model spoza profili')
+                                       : (MD.unloaded ? 'Model wyłączony' : 'Kobold nie działa');
+  $('mUnload').disabled = !MD.online;
+  $('mLoadedInfo').textContent = MD.online ? base(MD.running_model) + (MD.context ? ` · ${MD.context} tok.` : '') : '';
+  if (MD.gpu) {
+    $('gpuName').textContent = MD.gpu.name;
+    $('gpuText').textContent = `zajęte ${GB(MD.gpu.used)} z ${GB(MD.gpu.total)}`;
+    setBar($('gpuBar'), MD.gpu.used, MD.gpu.total);
+  } else $('gpuText').textContent = 'brak odczytu karty (nvidia-smi)';
+  renderProfiles();
+  $('filesDirs').textContent = 'folder: ' + MD.dirs.join(', ');
+  $('filesTable').innerHTML = '<tr><th>Plik</th><th>Rodzaj</th><th>Kwantyzacja</th><th>Rozmiar</th></tr>' +
+    MD.files.map(f => `<tr><td>${esc(f.name)}</td><td>${KIND[f.kind] || f.kind}</td><td>${esc(f.quant)}</td><td>${GB(f.size)}</td></tr>`).join('');
+}
+function renderProfiles() {
+  const list = $('profList'); list.innerHTML = '';
+  const total = MD.gpu?.total || 0;
+  for (const [name, P] of Object.entries(MD.profiles)) {
+    const p = P.profile, fit = !total || P.vram <= total * 0.97;
+    const d = mk('div', 'prof' + (name === MD.active ? ' active' : ''));
+    d.innerHTML = `<h3>${esc(name)}
+      ${name === MD.active ? '<span class="badge ok">załadowany</span>' : ''}
+      <span class="badge ${fit ? '' : 'warn'}" title="szacunek">~${GB(P.vram)}${fit ? '' : ' · część w RAM'}</span>
+      ${P.missing.length ? '<span class="badge bad">brak pliku</span>' : ''}</h3>
+      <div class="hint">${p.model ? esc(base(p.model)) + ' · ' + p.context + ' tok.' : esc(base(p.musicdit || ''))}${p.note ? ' · ' + esc(p.note) : ''}</div>`;
+    const row = mk('div', 'row');
+    const b = mk('button', 'primary small', name === MD.active ? 'Przeładuj' : 'Załaduj');
+    b.disabled = !!P.missing.length || !!applyTimer;
+    b.onclick = () => applyProfile(name);
+    row.append(b); d.append(row); list.append(d);
+  }
+}
+$('mRefresh').onclick = loadModels;
+$('mUnload').onclick = async () => {
+  $('mUnload').disabled = true;
+  msg('Wyłączam model…');
+  try {
+    const r = await post('/api/unload', {});  // returns only once Kobold confirms there is no model
+    msg(r.ok ? 'Model wyłączony – karta graficzna wolna. Załaduje się sam przy następnym zadaniu.' : r.error, !r.ok);
+  } catch (e) { msg('Błąd: ' + e.message, true); }
+  $('mUnload').disabled = false;
+  loadModels(); refreshStatus();
+};
+async function applyProfile(name) {
+  const r = await post('/api/apply', { name });
+  if (!r.ok) { msg(r.error, true); return; }
+  msg(`Ładuję ${name}…`);
+  refreshStatus();
+  pollApply();
+}
+function pollApply() {
+  clearInterval(applyTimer);
+  applyTimer = setInterval(async () => {
+    let a;
+    try { a = await (await fetch('/api/apply')).json(); } catch { return; }
+    $('applyLog').textContent = a.log.join('\n');
+    $('applyLog').scrollTop = $('applyLog').scrollHeight;
+    if (a.running) return;
+    clearInterval(applyTimer); applyTimer = null;
+    if (a.code === 0) msg(`Załadowano profil ${a.name}.`);
+    else if (a.code === 2) msg('Model właśnie odpowiada – nic nie podmieniłem. Spróbuj za chwilę.', true);
+    else msg('Nie udało się załadować – szczegóły w logu powyżej.', true);
+    refreshStatus();
+    if ($('view-models').classList.contains('active')) loadModels();
+  }, 1000);
+}
+
+// ---- Saving: the system dialog shows only the right file type (MP3/WAV). Each save is the user's own click.
+function alertInfo(t) { $('musInfo').textContent = t; }
+const SAVE_TYPES = { 'audio/mpeg': ['MP3', '.mp3'], 'audio/wav': ['WAV', '.wav'] };
+const saveBody = async src => (typeof src === 'string' ? (await fetch(src)).body : src.stream());
+// In the app window (pywebview) the native Windows dialog does the saving: it filters by type for sure.
+const nativeSave = () => window.pywebview && window.pywebview.api && window.pywebview.api.save;
+// A file name from the user's own words: characters Windows forbids go, cut at a word near 60 characters.
+// Same names in one folder get -2, -3 when saving (never overwritten).
+function fileBase(text, fallback) {
+  let s = String(text || '').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (s.length > 60) s = s.slice(0, 60).replace(/\s+\S*$/, '');
+  s = s.replace(/[ .]+$/, '');
+  return s || fallback;
+}
+const SAVE_KIND = { 'audio/mpeg': 'mp3', 'audio/wav': 'wav' };
+async function saveB64(src) {
+  const blob = typeof src === 'string' ? await (await fetch(src)).blob() : src;
+  return await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob); });
+}
+async function saveFile(src, name, type) {
+  if (nativeSave() && SAVE_KIND[type]) {
+    const r = await window.pywebview.api.save(name, SAVE_KIND[type], await saveB64(src));
+    if (!r.ok && !r.cancel) alertInfo('✗ ' + r.error);
+    return r.ok;
+  }
+  if (window.showSaveFilePicker && SAVE_TYPES[type]) {
+    const [desc, ext] = SAVE_TYPES[type];
+    let h = null;
+    try {
+      h = await showSaveFilePicker({ suggestedName: name, id: 'sg-' + ext.slice(1), excludeAcceptAllOption: true,
+                                     types: [{ description: desc, accept: { [type]: [ext] } }] });
+    } catch (e) { if (e.name === 'AbortError') return false; }
+    if (h) { await (await saveBody(src)).pipeTo(await h.createWritable()); return true; }
+  }
+  const a = document.createElement('a'); a.href = typeof src === 'string' ? src : URL.createObjectURL(src);
+  a.download = name; a.click();
+  return true;
+}
+// Many files: pick a folder once; an existing file is never overwritten (name-2, name-3, ...).
+async function saveMany(items, info) {
+  if (nativeSave()) {
+    // The Save dialog names the first file; the others go into the same folder (never over existing files).
+    const kindOf = it => SAVE_KIND[it.src.type] || it.name.split('.').pop();
+    try {
+      const f = await window.pywebview.api.pick_folder(items[0].name, kindOf(items[0]));
+      if (!f.ok) { if (!f.cancel) info('✗ ' + f.error); return; }
+      for (const [i, it] of items.entries()) {
+        info(`zapisuję ${i + 1} z ${items.length}…`);
+        const r = await window.pywebview.api.save_in_folder(i ? it.name : f.name, kindOf(it), await saveB64(it.src));
+        if (!r.ok) { info('✗ ' + r.error); return; }
+      }
+      info(`zapisano plików: ${items.length} → ${f.path}`);
+    } catch (e) { info('✗ ' + (e.message || e)); }
+    return;
+  }
+  if (window.showDirectoryPicker) {
+    let dir = null;
+    try { dir = await showDirectoryPicker({ id: 'sg-many', mode: 'readwrite' }); }
+    catch (e) { if (e.name === 'AbortError') return; }
+    if (dir) {
+      try {
+        for (const [i, it] of items.entries()) {
+          let name = it.name;
+          for (let n = 2; ; n++) {
+            try { await dir.getFileHandle(name); } catch (e) { break; }
+            name = it.name.replace(/(\.\w+)$/, `-${n}$1`);
+          }
+          info(`zapisuję ${i + 1} z ${items.length}…`);
+          const h = await dir.getFileHandle(name, { create: true });
+          await (await saveBody(it.src)).pipeTo(await h.createWritable());
+        }
+        info(`zapisano plików: ${items.length}`);
+      } catch (e) { info('✗ ' + e.message); }
+      return;
+    }
+  }
+  for (const it of items) {
+    const a = document.createElement('a'); a.href = typeof it.src === 'string' ? it.src : URL.createObjectURL(it.src);
+    a.download = it.name; a.click();
+    await new Promise(r => setTimeout(r, 300));
+  }
+}
+
+// ---- Music: instrumental backing tracks (ACE-Step 1.5 in KoboldCpp)
+let musCurrent = null;  // {url, name, plan}
+const musTracks = [];   // every track of this window, newest first
+// The music planner understands English best (17.11 test: a Polish description came out as an orchestral
+// piece in a minor key). Gemma translates once per description; new versions of it need no model swap.
+const musEn = store.get('musEn', {});
+async function musCaption(prompt) { return translateEn(prompt, t => { $('musInfo').textContent = t; }); }
+async function translateEn(prompt, show) {
+  if (musEn[prompt]) return musEn[prompt];
+  if (!(await prepare('text', show))) return null;
+  show('tłumaczę opis…');
+  const r = await post('/api/translate', { text: prompt, jezyk: 'angielski' });
+  if (!r.ok) throw new Error(r.error);
+  musEn[prompt] = r.text.trim();
+  const keys = Object.keys(musEn); if (keys.length > 30) delete musEn[keys[0]];
+  store.set('musEn', musEn);
+  return musEn[prompt];
+}
+function showTrack(t) {
+  musCurrent = t;
+  const box = $('musResult'); box.innerHTML = '';
+  const au = document.createElement('audio'); au.controls = true; au.src = t.url;
+  const p = t.plan || {};
+  const meta = [p.bpm && `${p.bpm} BPM`, p.keyscale, p.duration && `${p.duration} s`, p.seed != null && `seed ${p.seed}`].filter(Boolean).join(' · ');
+  box.append(au, mk('div', 'hint', meta), ...(p.caption ? [mk('div', 'hint', p.caption)] : []));
+  $('musSave').disabled = false;
+}
+$('musGo').onclick = async () => {
+  const prompt = $('musPrompt').value.trim();
+  const genre = $('musGenre').value, style = $('musStyle').value;
+  if (!prompt && !genre && !style) { $('musInfo').textContent = 'Wybierz gatunek albo opisz podkład.'; return; }
+  $('musGo').disabled = true;
+  let tick;
+  try {
+    // Styles are already in English; only the user's own words go through Gemma.
+    const own = prompt ? await musCaption(prompt) : '';
+    if (prompt && !own) return;
+    const voice = $('musVoice').value;
+    let lyrics = '';
+    if (voice) {
+      // Empty box or a template with "..." left: Gemma fills it first, never sing the dots.
+      lyrics = lyrAddDots($('musLyrics').value).trim();
+      if (voice === 'backing calls') {  // no Gemma: leftover "..." go, an empty box gets a structure template
+        lyrics = lyrics.split('\n').filter(l => l.trim() !== '...').join('\n').trim() || lyrSkeleton().trim();
+      } else if (!lyrics || /^\.\.\.$/m.test(lyrics)) lyrics = await musWriteLyrics();
+      if (!lyrics) return;
+    }
+    // Lyrics longer than the chosen Length would be cut off: raise Length to fit (5 min at most).
+    let lenNote = '';
+    if (lyrics) {
+      const need = lyrSeconds(lyrics), fit = lyrFitLen(need);
+      if (need > +$('musLen').value + 15 && fit > +$('musLen').value) {
+        $('musLen').value = String(fit); lyrLenHint();
+        lenNote = ('długość ustawiona na') + ` ${mmss(fit)} – ` + ('tekst potrzebuje ok.') + ` ${mmss(need)}`;
+      }
+      if (need > fit + 15) lenNote = ('tekst za długi na 5 min – końcówka może zostać ucięta');
+    }
+    const caption = [genre, style, own, voice ? '' : 'instrumental', $('musFade').checked ? 'ends with a gentle fade-out' : '']
+      .filter(Boolean).join(', ');
+    if (!(await prepare('music', t => { $('musInfo').textContent = t; }))) return;
+    const t0 = Date.now();
+    tick = setInterval(() => { $('musInfo').innerHTML = `<span class="spin"></span>komponuję… ${((Date.now() - t0) / 1000).toFixed(0)} s`
+      + (lenNote ? ' · ' + lenNote : ''); }, 1000);
+    const fmt = $('musFmt').value;
+    const res = await fetch('/api/music', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: caption, duration: +$('musLen').value,
+                             bpm: +$('musBpm').value || +($('musGenre').selectedOptions[0].dataset.bpm || 0),
+                             format: fmt, seed: +$('musSeed').value, steps: +$('musSteps').value || 8,
+                             ...(voice ? { lyrics, vocal_language: $('musLang').value, voice } : {}) }) });
+    if ((res.headers.get('Content-Type') || '').includes('json')) throw new Error((await res.json()).error || 'błąd');
+    let plan = {};
+    try { plan = JSON.parse(decodeURIComponent(res.headers.get('X-Music-Plan') || '{}')); } catch (e) {}
+    // Kobold may send no audio type; without one the browser saves the file with no extension.
+    const ext = fmt === 'wav' ? 'wav' : 'mp3';
+    const blob = new Blob([await res.blob()], { type: ext === 'mp3' ? 'audio/mpeg' : 'audio/wav' });
+    const title = $('musTitle').value.trim();
+    const name = fileBase(title || [genre && $('musGenre').selectedOptions[0].textContent, prompt].filter(Boolean).join(' - '), 'muzyka') + '.' + ext;
+    const label = [title, genre && $('musGenre').selectedOptions[0].textContent,
+                   style && $('musStyle').selectedOptions[0].textContent,
+                   voice && $('musVoice').selectedOptions[0].textContent, prompt].filter(Boolean).join(' – ');
+    const t = { url: URL.createObjectURL(blob), name, plan, prompt: label, blob };
+    musTracks.unshift(t);
+    showTrack(t);
+    musRow(t, `${plan.duration || ''} s · ${(blob.size / 2 ** 20).toFixed(1)} MB`);
+    $('musInfo').textContent = `gotowe w ${((Date.now() - t0) / 1000).toFixed(0)} s`;
+  } catch (e) {
+    $('musInfo').textContent = e.message;
+  } finally { clearInterval(tick); $('musGo').disabled = false; }
+};
+$('musSave').onclick = () => musCurrent && saveFile(musCurrent.blob, musCurrent.name, musCurrent.blob.type);
+// History rows: tick to pick, ✕ to drop , click to play.
+function musRow(t, info) {
+  const row = mk('div', 'mitem');
+  const cb = mk('input'); cb.type = 'checkbox'; cb.title = 'Zaznacz';
+  cb.onclick = e => e.stopPropagation();
+  cb.onchange = () => { t.sel = cb.checked; musHist(); };
+  const x = mk('button', 'x', '✕'); x.title = 'Usuń z historii';
+  x.onclick = e => {
+    e.stopPropagation();
+    musTracks.splice(musTracks.indexOf(t), 1); row.remove();
+    musHist();
+    if (musCurrent !== t) return;
+    if (musTracks.length) { showTrack(musTracks[0]); return; }
+    musCurrent = null; $('musResult').innerHTML = '<span class="hint">tu pojawi się utwór</span>'; $('musSave').disabled = true;
+  };
+  row.append(cb, mk('span', 'f', t.prompt), mk('span', 'd', info), x);
+  row.onclick = () => showTrack(t);
+  Object.assign(t, { row, cb, sel: false });
+  $('musHistory').prepend(row);
+  musHist();
+}
+function musHist() {
+  const n = musTracks.filter(x => x.sel).length;
+  musTracks.forEach(x => { x.cb.checked = x.sel; x.row.classList.toggle('on', x.sel); });
+  $('musSelBar').hidden = !musTracks.length;
+  $('musSaveSel').textContent = n ? `Zapisz zaznaczone (${n})` : `Zapisz wszystkie (${musTracks.length})`;
+}
+$('musSelAll').onclick = () => { musTracks.forEach(x => { x.sel = true; }); musHist(); };
+$('musSelNone').onclick = () => { musTracks.forEach(x => { x.sel = false; }); musHist(); };
+$('musSaveSel').onclick = () => {
+  const pick = (musTracks.some(x => x.sel) ? musTracks.filter(x => x.sel) : musTracks).slice().reverse();
+  saveMany(pick.map(t => ({ src: t.blob, name: t.name })), s => { $('musInfo').textContent = s; });
+};
+// Lyrics box: right click opens a menu of ACE-Step tags (Shift + right click = the normal menu).
+const LYR_TAGS = [
+  ['Struktura', ['[Intro]', '[Verse 1]', '[Verse 2]', '[Pre-Chorus]', '[Chorus]', '[Post-Chorus]', '[Bridge]',
+                 '[Breakdown]', '[Build-Up]', '[Final Chorus]', '[Outro]', '[End]']],
+  ['Wokal', ['[Lead Vocal]', '[Female Vocal]', '[Male Vocal]', '[Duet]', '[Backing Vocals]', '[Backing Vocal Harmony]',
+             '[Female Choir]', '[Male Choir]', '[Choir]', '[Unison Vocals]', '[Vocal Ad-libs]', '[Spoken]', '[Whispered]', '[A cappella]']],
+  ['Instrumenty', ['[Instrumental]', '[Instrumental Break]', '[Guitar Solo]', '[Piano Solo]', '[Drum Break]', '[Fiddle Solo]',
+                   '[Bass Solo]', '[Soft Piano]', '[Acoustic Guitar]', '[Full Band]', '[Drums Drop Out]']],
+  ['Wstawki chórku', ['(Oh yeah!)', '(Hey! Hey!)', '(Ooooh!)', '(La la la)', '(Na na na)', '(Woah-oh-oh)', '(Yeah, yeah, yeah)',
+                      '(Uh-huh)', '(Come on!)', '(Ho! Hey!)', '(Aaah)', '(Ooh-ooh)', '(Shoo-bee-doo-wop)', '(Doo-doo-doo)',
+                      '(Everybody!)', '(One more time!)', '(Let’s go!)', '(Clap your hands!)', '(Hej! Hej!)', '(Jeszcze raz!)']],
+];
+// The cheat-sheet layout; "..." marks the places for words (typed by hand or filled by Gemma).
+const LYR_TEMPLATE = `[Intro - Instrumental]
+
+[Verse 1 - Lead Vocal]
+...
+...
+...
+...
+
+[Pre-Chorus - Lead Vocal]
+...
+...
+
+[Chorus - Lead Vocal]
+...
+...
+...
+...
+
+[Backing Vocals]
+(Oh yeah!)
+
+[Verse 2 - Lead Vocal]
+...
+...
+...
+...
+
+[Chorus - Lead Vocal + Backing Vocals]
+...
+...
+...
+...
+(Hey! Hey!)
+
+[Instrumental Break]
+
+[Bridge - Lead Vocal]
+...
+...
+
+[Final Chorus - Lead Vocal + Choir]
+...
+...
+...
+...
+
+[Outro - Instrumental + Vocal Ad-libs]
+
+[End]
+`;
+function lyrInsert(text) {
+  const ta = $('musLyrics'); ta.focus();
+  const v = ta.value, a = ta.selectionStart, b = ta.selectionEnd;
+  let lineStart = v.lastIndexOf('\n', a - 1) + 1, lineEnd = a;
+  if (a === b && lineStart === a && a > 0) {  // empty line: look at the tag on the line above
+    lineEnd = a - 1; lineStart = v.lastIndexOf('\n', lineEnd - 1) + 1;
+  }
+  // A voice/instrument tag after a lone section tag joins it: [Chorus] + [Lead Vocal] -> [Chorus - Lead Vocal]
+  const m = /^\[([^\]\n]+)\]\s*$/.exec(v.slice(lineStart, lineEnd));
+  if (m && a === b && text.startsWith('[') && !LYR_TAGS[0][1].includes(text)) {
+    ta.setSelectionRange(lineStart, a);  // through the line break when the tag is on the line above
+    text = `[${m[1]} - ${text.slice(1, -1)}]` + (lineEnd < a ? '\n' : '');
+  } else if (text !== LYR_TEMPLATE) {
+    const before = a > 0 && v[a - 1] !== '\n' ? '\n' : '';
+    text = before + text + '\n';
+  }
+  if (!document.execCommand('insertText', false, text)) {  // execCommand keeps Ctrl+Z working
+    ta.setRangeText(text, ta.selectionStart, ta.selectionEnd, 'end');
+  }
+}
+function lyrMenu(x, y) {
+  document.querySelector('.ctx')?.remove();
+  const menu = mk('div', 'ctx');
+  const left = x > innerWidth - 420, up = y > innerHeight * 0.45;
+  for (const [name, tags] of LYR_TAGS) {
+    const g = mk('div', 'it grp', name), sub = mk('div', 'ctx sub' + (left ? ' left' : '') + (up ? ' up' : ''));
+    for (const tag of tags) { const it = mk('div', 'it', tag); it.onclick = () => { menu.remove(); lyrInsert(tag); }; sub.append(it); }
+    g.append(sub); menu.append(g);
+  }
+  // Fitted to length, genre and voice (same as the Template button) / the fixed one from the cheat sheet.
+  const fit = mk('div', 'it', 'Szablon wg ustawień'); fit.onclick = () => { menu.remove(); lyrReplace(lyrSkeleton()); };
+  const tpl = mk('div', 'it', 'Szablon ze ściągawki'); tpl.onclick = () => { menu.remove(); lyrReplace(LYR_TEMPLATE); };
+  const gem = mk('div', 'it', 'Gemma: wypełnij tekst'); gem.onclick = () => { menu.remove(); $('musWrite').click(); };
+  const own = mk('div', 'it', 'Dopasuj mój tekst do szablonu'); own.onclick = () => { menu.remove(); $('musFit').click(); };
+  menu.append(fit, tpl, gem, own, mk('div', 'note', 'Shift + prawy przycisk = zwykłe menu'));
+  document.body.append(menu);
+  menu.style.left = Math.min(x, innerWidth - menu.offsetWidth - 4) + 'px';
+  menu.style.top = Math.min(y, innerHeight - menu.offsetHeight - 4) + 'px';
+}
+$('musLyrics').addEventListener('contextmenu', e => { if (e.shiftKey) return; e.preventDefault(); lyrMenu(e.clientX, e.clientY); });
+document.addEventListener('mousedown', e => { if (!e.target.closest('.ctx')) document.querySelector('.ctx')?.remove(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelector('.ctx')?.remove(); });
+for (const id of ['musLen', 'musFmt', 'musGenre', 'musStyle', 'musSteps', 'musBpm']) {
+  const v = store.get(id, null);
+  if (v !== null) $(id).value = v;
+  $(id).addEventListener('change', () => store.set(id, $(id).value));
+}
+
+
+async function musWriteLyrics() {
+  const show = t => { $('musInfo').textContent = t; };
+  if (!(await prepare('text', show))) return '';
+  $('musInfo').innerHTML = '<span class="spin"></span>piszę tekst piosenki…';
+  // The box's own structure is filled in (empty sung parts get "..." first); an empty box gets a new template.
+  const box = lyrAddDots($('musLyrics').value);
+  if (box.trim() && !/^\.\.\.$/m.test(box)) { show('nic do wypełnienia – tekst nie ma pustych miejsc'); return $('musLyrics').value; }
+  const skeleton = box.trim() ? box : lyrSkeleton();
+  const r = await post('/api/lyrics', { theme: [$('musGenre').selectedOptions[0].textContent, $('musPrompt').value.trim()].filter(Boolean).join(', '),
+                                        lang: $('musLang').value, duration: +$('musLen').value, skeleton });
+  if (!r.ok) throw new Error(r.error);
+  $('musLyrics').value = r.text; musGoLabel(); lyrLenHint();
+  if (r.title && !$('musTitle').value.trim()) $('musTitle').value = r.title;  // a proposal, never over the user's
+  return r.text;
+}
+// The user's own text laid into the template in the box: tags stay, Gemma only places and splits the lines.
+$('musFit').onclick = async () => {
+  const own = lyrTakeTitle($('musRaw').value), raw = own.text.trim(), show = t => { $('musInfo').textContent = t; };
+  if (own.title) $('musTitle').value = own.title;
+  if (!raw) { $('musRawBox').open = true; $('musRaw').focus(); show('wklej swój tekst w pole „Twój gotowy tekst”'); return; }
+  let skeleton = lyrAddDots($('musLyrics').value);
+  if (!skeleton.trim()) skeleton = lyrSkeleton();
+  if (!/^\.\.\.$/m.test(skeleton)) { show('szablon nie ma pustych miejsc – wstaw szablon albo same znaczniki'); return; }
+  $('musFit').disabled = true;
+  try {
+    if (!(await prepare('text', show))) return;
+    $('musInfo').innerHTML = '<span class="spin"></span>' + ('dopasowuję tekst…');
+    const r = await post('/api/lyrics/fit', { skeleton, text: raw, lang: $('musLang').value });
+    if (!r.ok) throw new Error(r.error);
+    const ta = $('musLyrics'); ta.focus(); ta.select();  // through insertText, so Ctrl+Z brings the template back
+    document.execCommand('insertText', false, r.text) || (ta.value = r.text);
+    ta.setSelectionRange(0, 0); ta.scrollTop = 0; musGoLabel(); lyrLenHint();
+    const notes = [('tekst dopasowany – sprawdź i kliknij Generuj')];
+    if (r.extra_lines) notes.push(('nie zmieściło się wersów:') + ` ${r.extra_lines} → ` + ('dodatkowa zwrotka'));
+    if (/^\.\.\.$/m.test(r.text)) notes.push(('zostały puste miejsca – „Gemma: wypełnij tekst” je uzupełni'));
+    if (r.foreign > 0.05) notes.push(('Gemma zmieniła część słów – porównaj z oryginałem'));
+    show(notes.join(' · '));
+  } catch (e) { show('✗ ' + e.message); }
+  finally { $('musFit').disabled = false; }
+};
+$('musWrite').onclick = async () => {
+  if ($('musVoice').value === 'backing calls') { $('musInfo').textContent = ('w trybie „tylko muzyka + okrzyki” Gemma nie pisze tekstu – wpisz okrzyki sam albo wybierz głos'); return; }
+  $('musWrite').disabled = true;
+  try { if (await musWriteLyrics()) $('musInfo').textContent = 'tekst gotowy – popraw go, jeśli chcesz, i kliknij Generuj'; }
+  catch (e) { $('musInfo').textContent = '✗ ' + e.message; }
+  finally { $('musWrite').disabled = false; }
+};
+function musVocalUi() {
+  document.querySelectorAll('.vocal').forEach(el => { el.hidden = !$('musVoice').value; });
+  document.querySelector('.musnovocal').hidden = !!$('musVoice').value;
+}
+for (const id of ['musVoice', 'musLang']) {
+  const v = store.get(id, null);
+  if (v !== null) $(id).value = v;
+  $(id).addEventListener('change', () => { store.set(id, $(id).value); musVocalUi(); });
+}
+musVocalUi();
+
+
+// Song skeleton from length, genre and voice: section tags + "..." lines to fill in by hand.
+// Sung parts with no lines under the tag get room for words: verse/chorus 4 (rap verse 8), pre/post 2.
+function lyrAddDots(text) {
+  if ($('musVoice').value === 'backing calls') return text;  // calls only: empty parts stay instrumental
+  const rap = lyrFamily($('musGenre').value) === 'rap';
+  const want = tag => {
+    const name = tag.slice(1, -1).split(' - ')[0].trim().toLowerCase();
+    if (/^verse/.test(name)) return rap ? 8 : 4;
+    if (/^(final chorus|chorus|hook|bridge)/.test(name)) return 4;
+    if (/^(pre-chorus|post-chorus)/.test(name)) return 2;
+    return 0;
+  };
+  const lines = text.split('\n'), out = [];
+  for (let i = 0; i < lines.length; i++) {
+    const s = lines[i].trim();
+    out.push(lines[i]);
+    if (!(s.startsWith('[') && s.endsWith(']')) || !want(s)) continue;
+    let k = i + 1, sung = false;
+    while (k < lines.length && !(lines[k].trim().startsWith('['))) { const t = lines[k].trim(); if (t && !t.startsWith('(')) sung = true; k++; }
+    if (!sung) for (let n = 0; n < want(s); n++) out.push('...');
+  }
+  return out.join('\n');
+}
+// Rough length of the lyrics in seconds: a sung line ~ 2 bars, a call ~ 1 bar, instrumental parts by kind.
+function lyrSeconds(text) {
+  const bpm = +$('musBpm').value || +($('musGenre').selectedOptions[0].dataset.bpm || 0) || 110;
+  const bar = 4 * 60 / bpm;
+  let s = 0;
+  for (const raw of text.split('\n')) {
+    const l = raw.trim();
+    if (!l) continue;
+    if (l.startsWith('[') && l.endsWith(']')) {
+      const t = l.toLowerCase();
+      if (/^\[(intro|outro)/.test(t)) s += 4 * bar;
+      else if (/^\[(verse|pre-chorus|chorus|final chorus|bridge)[^\]]*instrumental/.test(t)) s += 8 * bar;
+      else if (/solo|break|breakdown|build-up|beat switch|drums drop|strings\]|interlude/.test(t)) s += 8 * bar;
+    } else s += l.startsWith('(') ? bar : 2 * bar;
+  }
+  return Math.round(s);
+}
+const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+// The shortest Length option that fits the lyrics (the longest one when nothing fits).
+function lyrFitLen(sec) {
+  const opts = [...$('musLen').options].map(o => +o.value);
+  return opts.find(v => v >= sec) || opts[opts.length - 1];
+}
+// With a voice and no finished lyrics (empty box or "..." left) Generate first has Gemma write them.
+function musGoLabel() {
+  const txt = $('musLyrics').value.trim();
+  const all = !!$('musVoice').value && $('musVoice').value !== 'backing calls' && (!txt || /^\.\.\.$/m.test(lyrAddDots(txt)));
+  $('musGo').textContent = (all ? 'Generuj wszystko' : 'Generuj muzykę');
+  $('musGo').title = (all ? 'Gemma pisze tekst w puste miejsca, potem powstaje muzyka'
+                                 : 'Muzyka z tekstem z pola (albo bez śpiewu)');
+}
+['musLyrics', 'musVoice', 'musGenre', 'musLen'].forEach(id => {
+  $(id).addEventListener('input', musGoLabel); $(id).addEventListener('change', musGoLabel);
+});
+musGoLabel();
+function lyrLenHint() {
+  const txt = $('musLyrics').value.trim(), h = $('musLenHint');
+  if (!$('musVoice').value || !txt) { h.textContent = ''; h.style.color = ''; return; }
+  const sec = lyrSeconds(lyrAddDots(txt));
+  h.textContent = `· ${('tekst ≈')} ${mmss(sec)}`;
+  h.style.color = sec > +$('musLen').value + 15 ? 'var(--bad)' : '';
+}
+['musLyrics', 'musLen', 'musBpm', 'musGenre', 'musVoice'].forEach(id => {
+  $(id).addEventListener('input', lyrLenHint); $(id).addEventListener('change', lyrLenHint);
+});
+// Lyrics from Claude & co. often start with a title ("**Summer night**", "Tytuł: …", "# …") and wrap tags in
+// markdown. Before the first [tag]: a marked title line, or a single short line, becomes the title; ** and # go.
+function lyrTakeTitle(text) {
+  const lines = text.replace(/\*\*/g, '').replace(/^#+\s*/gm, '').split('\n');
+  const first = lines.findIndex(l => /^\s*\[.+\]\s*$/.test(l));
+  const head = (first < 0 ? [] : lines.slice(0, first)).map(l => l.trim()).filter(Boolean);
+  let title = '', cut = 0;
+  const marked = head.find(l => /^(tytuł|title|titolo)\s*:/i.test(l));
+  if (marked) title = marked.replace(/^[^:]*:\s*/, '');
+  else if (head.length === 1 && head[0].split(/\s+/).length <= 8 && !head[0].startsWith('(')) title = head[0];
+  if (title) cut = first;  // everything before the first tag goes (title, "Here is your song:" and the like)
+  title = title.replace(/^["„“”'«»]+|["„“”'«»]+$/g, '').trim();
+  return { title, text: (title ? lines.slice(cut) : lines).join('\n').replace(/^\n+/, '') };
+}
+$('musLyrics').addEventListener('paste', () => setTimeout(() => {
+  const ta = $('musLyrics'), r = lyrTakeTitle(ta.value);
+  if (r.title) $('musTitle').value = r.title;
+  if (r.text !== ta.value) { ta.value = r.text; musGoLabel(); lyrLenHint(); }
+}, 0));
+function lyrFamily(genre) {
+  const g = genre.toLowerCase();
+  if (/hip hop/.test(g)) return 'rap';
+  if (/disco|house|techno|trance|drum and bass|synthwave|latin/.test(g)) return 'dance';
+  if (/soft rock|smooth jazz|soul|ambient|chillout|classical|folk|lo-fi|cinematic/.test(g)) return 'soft';
+  if (/rock|metal|blues|country/.test(g)) return 'rock';
+  if (/jazz|swing|funk/.test(g)) return 'jazz';
+  return 'pop';
+}
+function lyrSkeleton() {
+  const len = +$('musLen').value, fam = lyrFamily($('musGenre').value), voice = $('musVoice').value;
+  const pick = a => a[Math.floor(Math.random() * a.length)], r = (p = 0.5) => Math.random() < p;
+  const duet = voice.startsWith('male and female'), choir = voice === 'choir vocals', calls = voice === 'backing calls';
+  // Voices: duet alternates verses (who starts is random); choir sings the chorus.
+  const lead = voice === 'male vocals' ? 'Male Vocal' : voice === 'female vocals' ? 'Female Vocal' : 'Lead Vocal';
+  const [va, vb] = duet ? (r() ? ['Female Vocal', 'Male Vocal'] : ['Male Vocal', 'Female Vocal']) : [lead, lead];
+  const chV = duet ? 'Duet' : choir ? pick(['Lead Vocal + Choir', 'Choir']) : r(0.4) ? `${lead} + Backing Vocals` : lead;
+  const F = {
+    dance: { intro: ['Intro - Instrumental', 'Intro - Build-Up', 'Intro - Drum Break'], solo: ['Synth Solo', 'Instrumental Break', 'Breakdown'],
+             calls: ['(Hey! Hey!)', '(Come on!)', '(One more time!)', '(Everybody!)', '(Clap your hands!)'],
+             outro: ['Outro - Instrumental + Vocal Ad-libs', 'Outro - Instrumental', 'Outro - Fade Out'] },
+    rock: { intro: ['Intro - Full Band', 'Intro - Guitar Riff', 'Intro - Drum Break'], solo: ['Guitar Solo', 'Guitar Solo', 'Drum Break', 'Instrumental Break'],
+            calls: ['(Ho! Hey!)', '(Woah-oh-oh)', '(Yeah, yeah, yeah)'], outro: ['Outro - Full Band', 'Outro - Guitar Solo', 'Outro - Instrumental'] },
+    jazz: { intro: ['Intro - Piano', 'Intro - Instrumental', 'Intro - Walking Bass'], solo: ['Saxophone Solo', 'Piano Solo', 'Trumpet Solo', 'Bass Solo'],
+            calls: ['(Shoo-bee-doo-wop)', '(Doo-doo-doo)', '(Oh yeah!)'], outro: ['Outro - Instrumental', 'Outro - Saxophone Solo', 'Outro - Piano'] },
+    soft: { intro: ['Intro - Soft Piano', 'Intro - Acoustic Guitar', 'Intro - Strings'], solo: ['Instrumental Break', 'Piano Solo', 'Strings'],
+            calls: ['(Ooh-ooh)', '(Aaah)'], outro: ['Outro - Soft Piano', 'Outro - Acoustic Guitar', 'Outro - Fade Out'] },
+    rap: { intro: ['Intro - Spoken', 'Intro - Instrumental', 'Intro - Drum Break'], solo: ['Drum Break', 'Beat Switch', 'Instrumental Break'],
+           calls: ['(Uh-huh)', '(Yeah, yeah, yeah)', '(Let’s go!)', '(Come on!)'], outro: ['Outro - Spoken', 'Outro - Instrumental'] },
+    pop: { intro: ['Intro - Instrumental', 'Intro - Soft Piano', 'Intro - Vocal Ad-libs'], solo: ['Instrumental Break', 'Guitar Solo', 'Synth Solo', 'Drums Drop Out'],
+           calls: ['(Oh yeah!)', '(Ooh-ooh)', '(Na na na)', '(Hey!)'], outro: ['Outro - Instrumental', 'Outro - Vocal Ad-libs', 'Outro - Fade Out'] },
+  }[fam];
+  // Song plans: I intro, V verse, P pre-chorus, C chorus, Q post-chorus, S solo/break, B bridge, D breakdown,
+  // U build-up, F final chorus, O outro. Picked at random among those that fit the length.
+  const plans = len <= 30 ? ['VC'] : len <= 60 ? ['VC', 'CVC', 'VPC', 'IVC']
+    : len <= 150 ? ['IVCVCO', 'IVPCVPCO', 'ICVCVCO', 'IVCQVCQO', 'IVVCVCO', 'IVCVCBCO']
+    : len < 240 ? ['IVPCVPCSBFO', 'IVCVCSBFO', 'ICVPCVPCBFO', 'IVPCQVPCQDUFO', 'IVCVCBSFFO', 'IVVCVCSBFO']
+    : ['IVPCVPCSVCBFO', 'IVCQVCQSVCBUFFO', 'ICVPCVPCSBDUFO', 'IVPCVPCBSVCFFO', 'IVCVCSVCBFO'];
+  const plan = pick(plans);
+  const vN = len <= 30 ? 4 : fam === 'rap' ? pick([8, 8, 12]) : pick([4, 4, 6, 8]), cN = len <= 30 ? 4 : pick([4, 4, 6]), pN = pick([2, 2, 3]), bN = pick([2, 4, 4]);
+  const call = r(0.6) ? pick(F.calls) : '';
+  const dots = n => Array(n).fill('...').join('\n');
+  // n different calls of the genre, the song's own call first when it has one.
+  const shouts = (n, first) => [...new Set([first, ...F.calls.slice().sort(() => Math.random() - 0.5)].filter(Boolean))]
+    .slice(0, n).join('\n');
+  const out = []; let verse = 0, finals = 0;
+  for (const s of plan) {
+    if (s === 'I') out.push(`[${pick(F.intro)}]`);
+    // Calls only: the sung parts become instrumental, the choruses get shouts.
+    else if (s === 'V' && calls) { verse++; out.push(`[Verse ${verse} - Instrumental]`); }
+    else if (s === 'P' && calls) out.push('[Pre-Chorus - Instrumental]');
+    else if (s === 'C' && calls) out.push(`[Chorus - Backing Vocals]\n${shouts(2, call)}`);
+    else if (s === 'V') { verse++; const who = duet && verse > 2 ? 'Duet' : verse % 2 ? va : vb; out.push(`[Verse ${verse} - ${who}]\n${dots(vN)}`); }
+    else if (s === 'P') out.push(`[Pre-Chorus - ${verse % 2 ? va : vb}]\n${dots(pN)}`);
+    else if (s === 'C') out.push(`[Chorus - ${chV}]\n${dots(cN)}` + (call ? '\n' + call : ''));
+    else if (s === 'Q') out.push(`[Post-Chorus - Backing Vocals]\n${shouts(2)}`);
+    else if (s === 'S') out.push(`[${pick(F.solo)}]`);
+    else if (s === 'B' && calls) out.push(pick(['[Bridge - Instrumental]', '[Breakdown]', `[${pick(F.solo)}]`]));
+    else if (s === 'B') {
+      const how = fam === 'soft' && r() ? 'Whispered' : fam === 'rap' && r() ? 'Spoken' : choir && r() ? 'A cappella' : duet ? 'Duet' : lead;
+      out.push(`[Bridge - ${how}]\n${dots(bN)}`);
+    }
+    else if (s === 'D') out.push('[Breakdown]');
+    else if (s === 'U') out.push(`[Build-Up - Backing Vocals]\n${pick(['(Ooooh!)', '(Aaah)', '(Woah-oh-oh)'])}`);
+    else if (s === 'F' && calls) out.push(`[Final Chorus - Group Chant]\n${shouts(3, call)}`);
+    else if (s === 'F') {
+      finals++;
+      const who = choir || r(0.5) ? `${duet ? 'Duet' : lead} + Choir` : chV;
+      out.push(`[${finals > 1 ? 'Final Chorus - Key Change' : 'Final Chorus'} - ${who}]\n${dots(cN)}\n${call || pick(F.calls)}`);
+    }
+    else if (s === 'O') out.push(`[${pick(F.outro)}]`);
+  }
+  out.push('[End]');
+  return out.join('\n\n') + '\n';
+}
+// A template always replaces the box (confirm() does not show in the app window); Ctrl+Z brings the old text back.
+function lyrReplace(tpl) {
+  const ta = $('musLyrics');
+  if (!$('musVoice').value) { $('musVoice').value = 'female vocals'; $('musVoice').dispatchEvent(new Event('change')); }
+  ta.focus(); ta.select();
+  document.execCommand('insertText', false, tpl) || (ta.value = tpl);
+  ta.setSelectionRange(0, 0); ta.scrollTop = 0; musGoLabel(); lyrLenHint();
+  $('musInfo').textContent = 'szablon gotowy – wpisz tekst w miejsce kropek (Ctrl+Z przywraca poprzedni tekst)';
+}
+// A ▾ button opens its list under (or above) itself: [label, action, title?] per item.
+function dropMenu(btn, items) {
+  const open = document.querySelector('.ctx');
+  open?.remove();
+  if (open && open.dataset.for === btn.id) return;  // second click on the same button closes it
+  const menu = mk('div', 'ctx dd'), b = btn.getBoundingClientRect();
+  menu.dataset.for = btn.id;
+  for (const [label, act, title] of items) {
+    const it = mk('div', 'it', label); if (title) it.title = (title);
+    it.onclick = () => { menu.remove(); act(); }; menu.append(it);
+  }
+  document.body.append(menu);
+  const below = innerHeight - b.bottom - 8, above = b.top - 8;
+  menu.style.maxHeight = Math.max(below, above) + 'px';
+  menu.style.left = Math.min(b.left, innerWidth - menu.offsetWidth - 4) + 'px';
+  menu.style.top = (menu.offsetHeight > below && above > below ? b.top - menu.offsetHeight - 4 : b.bottom + 4) + 'px';
+}
+// Template ▾: the same two templates as the right-click menu.
+$('musTpl').onclick = () => dropMenu($('musTpl'), [
+  ['Szablon wg ustawień', () => lyrReplace(lyrSkeleton()), 'Z długości, gatunku i wokalu; kolejne kliknięcie = inny układ'],
+  ['Szablon ze ściągawki', () => lyrReplace(LYR_TEMPLATE)]]);
+// One ▾ button per tag group; a tag goes in at the cursor of the lyrics box, as from the right-click menu.
+LYR_TAGS.forEach(([name, tags], k) => {
+  const b = mk('button', 'ghost small'); b.id = 'musTags' + k;
+  b.append(name, ' ▾');
+  b.title = ('Wstawia znacznik w miejscu kursora w tekście');
+  b.onclick = () => dropMenu(b, tags.map(t => [t, () => lyrInsert(t)]));
+  $('musTagBtns').append(b);
+});
+
+
+showView('music');
+refreshStatus();
+setInterval(refreshStatus, 5000);
+fetch('/api/apply').then(r => r.json()).then(a => { if (a.running) pollApply(); }).catch(() => {});
+</script>
+</body>
+</html>

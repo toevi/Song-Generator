@@ -1,0 +1,29 @@
+{
+  "url": "http://127.0.0.1:5012",
+  "host": "127.0.0.1",
+  "port": 5012,
+  "kobold": "serwer/koboldcpp.exe",
+  "models_dir": "modele",
+  "wait_s": 300,
+  "default_profile": "gemma",
+  "profiles": {
+    "gemma": {
+      "model": "modele/gemma-4-12b-it-UD-Q5_K_XL.gguf",
+      "context": 32768,
+      "gpulayers": -1,
+      "quantkv": "f16",
+      "jinja": false,
+      "reasoning": "default",
+      "sampler": {},
+      "note": "Gemma 4 12B - pisze teksty piosenek, dopasowuje Twój tekst do szablonu, proponuje tytuł"
+    },
+    "muzyka": {
+      "musicllm": "modele/acestep-5Hz-lm-4B-Q8_0.gguf",
+      "musicemb": "modele/Ace-Qwen3-Embedding-0.6B-BF16.gguf",
+      "musicdit": "modele/acestep-v15-sftturbo50-BF16.gguf",
+      "musicvae": "modele/ace-vae-BF16.gguf",
+      "musiclowvram": true,
+      "note": "ACE-Step 1.5 - utwory do 5 min (MIT, użytek komercyjny dozwolony)"
+    }
+  }
+}

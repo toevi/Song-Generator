@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.tmp
+*.json.tmp
+
+# Pliki modeli i silnik - za duze do repo (opis: modele/README.md, serwer/README.md)
+modele/*
+!modele/README.md
+serwer/koboldcpp.exe
+serwer/admin/
+
+# Profil okna pywebview (localStorage)
+app/.okno/
