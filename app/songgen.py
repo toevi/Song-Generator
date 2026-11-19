@@ -98,6 +98,8 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, st)
         elif path == "/api/models":
             self._json(200, E.overview())
+        elif path == "/i18n.js":
+            self._send(200, (UI_DIR / "i18n.js").read_bytes(), "text/javascript; charset=utf-8")
         elif path == "/monitor":
             self._send(200, (UI_DIR / "monitor.html").read_bytes(), "text/html; charset=utf-8")
         elif path == "/api/sys":
@@ -232,7 +234,7 @@ class SaveApi:
                     return {"ok": True}
                 except Exception:  # okno zamknięte - robimy nowe
                     self._monitor = None
-            self._monitor = webview.create_window("Podgląd", self._url + "/monitor", width=320, height=520,
+            self._monitor = webview.create_window("Monitor", self._url + "/monitor", width=320, height=520,
                                                   resizable=True, on_top=True, min_size=(260, 300))
             return {"ok": True}
         except Exception as e:  # noqa: BLE001

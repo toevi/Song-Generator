@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Podgląd</title>
+<title>Monitor</title>
 <link rel="icon" href="/icon.png">
+<script src="/i18n.js"></script>
 <style>
   :root {
     --bg: #f6f7f9; --panel: #ffffff; --text: #1d2330; --muted: #6b7385; --line: #dde1e8;
@@ -22,7 +23,7 @@
        color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
   h2 span { text-transform: none; letter-spacing: 0; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   section { margin-bottom: 10px; }
-  .row { display: grid; grid-template-columns: 38px 1fr 62px; align-items: center; gap: 8px; margin: 3px 0; }
+  .row { display: grid; grid-template-columns: 52px minmax(0, 1fr) 76px; align-items: center; gap: 8px; margin: 3px 0; }
   .row b { font-weight: 500; color: var(--muted); }
   .row em { font-style: normal; text-align: right; font-variant-numeric: tabular-nums; }
   .bar { height: 8px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); overflow: hidden; }
@@ -59,7 +60,7 @@
 <div id="err"></div>
 <script>
 const $ = id => document.getElementById(id);
-const GB = b => (b / 2 ** 30).toFixed(1).replace('.', ',');
+const GB = b => (b / 2 ** 30).toFixed(1).replace('.', (window.I18N && I18N.lang === 'en' ? '.' : ','));
 // level thresholds: [medium, hot]
 function setBar(id, pct, text, [mid, hot]) {
   const b = $(id + 'B');

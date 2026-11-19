@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Song Generator</title>
 <link rel="icon" href="/icon.png">
+<script src="/i18n.js"></script>
 <style>
   :root {
     --bg: #f6f7f9; --panel: #ffffff; --text: #1d2330; --muted: #6b7385; --line: #dde1e8;
@@ -40,6 +41,8 @@
   @keyframes pulse { 50% { opacity: .45; } }
   #status { margin-left: auto; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   #status .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+  .langsel { width: auto !important; flex: none; font: inherit; font-size: 12px; padding: 2px 4px; border: 1px solid var(--line); border-radius: 6px;
+             background: var(--bg); color: var(--muted); cursor: pointer; }
   .gear { background: none; border: 1px solid transparent; color: var(--muted); font-size: 18px; line-height: 1;
           padding: 4px 8px; border-radius: 6px; cursor: pointer; }
   .gear.active { border-color: var(--line); color: var(--text); background: var(--bg); }
@@ -157,6 +160,7 @@
     <h1><span class="note">♪</span>Song Generator</h1>
     <div id="profChips"></div>
     <div id="status"><span class="dot"></span><span id="statusText">sprawdzam model…</span><span class="spin" id="lspin" hidden></span><span class="lprog" id="lprog" hidden><i></i></span><span class="hint" id="vramText"></span></div>
+    <select id="langSel" class="langsel" title="Language / Język"></select>
     <button class="gear" id="monBtn" title="Podgląd: GPU, CPU, RAM (małe okienko)">📊</button>
     <button class="gear" id="gearBtn" title="Modele i ustawienia">⚙</button>
   </div>
@@ -316,7 +320,7 @@
 const $ = id => document.getElementById(id);
 const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt) e.textContent = txt; return e; };
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const GB = b => (b / 2 ** 30).toFixed(1).replace('.', ',') + ' GB';
+const GB = b => (b / 2 ** 30).toFixed(1).replace('.', (window.I18N && I18N.lang === 'en' ? '.' : ',')) + ' GB';
 const base = p => p ? p.split(/[\\/]/).pop() : '';
 const post = async (url, body) => (await fetch(url, {
   method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json();
@@ -333,6 +337,14 @@ function showView(v) {
   $('toolbar').hidden = v !== 'music';
   if (v === 'models') loadModels();
 }
+// ---- UI language (i18n.js): the choice is saved and the page reloads in the new language
+(function () {
+  const sel = $('langSel'), L = window.I18N;
+  if (!L) { sel.hidden = true; return; }
+  for (const [code, name] of Object.entries(L.LANGS)) { const o = mk('option', '', name); o.value = code; sel.append(o); }
+  sel.value = L.lang;
+  sel.onchange = () => { try { localStorage.setItem('sg_lang', sel.value); } catch {} location.reload(); };
+})();
 $('monBtn').onclick = () => {
   const api = window.pywebview && window.pywebview.api;
   if (api && api.open_monitor) api.open_monitor();
@@ -496,7 +508,7 @@ function renderProfiles() {
       ${name === MD.active ? '<span class="badge ok">załadowany</span>' : ''}
       <span class="badge ${fit ? '' : 'warn'}" title="szacunek">~${GB(P.vram)}${fit ? '' : ' · część w RAM'}</span>
       ${P.missing.length ? '<span class="badge bad">brak pliku</span>' : ''}</h3>
-      <div class="hint">${p.model ? esc(base(p.model)) + ' · ' + p.context + ' tok.' : esc(base(p.musicdit || ''))}${p.note ? ' · ' + esc(p.note) : ''}</div>`;
+      <div class="hint">${p.model ? esc(base(p.model)) + ' · ' + p.context + ' tok.' : esc(base(p.musicdit || ''))}${p.note ? ' · <span>' + esc(p.note) + '</span>' : ''}</div>`;
     const row = mk('div', 'row');
     const b = mk('button', 'primary small', name === MD.active ? 'Przeładuj' : 'Załaduj');
     b.disabled = !!P.missing.length || !!applyTimer;
@@ -528,7 +540,7 @@ function pollApply() {
     let a;
     try { a = await (await fetch('/api/apply')).json(); } catch { return; }
     syncLoad(a);
-    $('applyLog').textContent = a.log.join('\n');
+    $('applyLog').textContent = a.log.map(l => window.I18N ? I18N.tr(l) : l).join('\n');
     $('applyLog').scrollTop = $('applyLog').scrollHeight;
     if (a.running) return;
     clearInterval(applyTimer); applyTimer = null;
