@@ -12,7 +12,7 @@ i okrzyki. Gotowy tekst do wklejenia: [`disco-chants.txt`](disco-chants.txt).
 | Setting / Ustawienie | Value / Wartość |
 |---|---|
 | Genre / Gatunek | Disco |
-| Vocals / Wokal | music + choir shouts (`backing calls`) / tylko muzyka + okrzyki chórku |
+| Vocals / Wokal | **choir** / **chór** (see the note below / patrz uwaga niżej) |
 | Singing language / Język śpiewu | Polish / polski |
 | Length / Długość | 3 min |
 | Tempo (BPM) | 250 |
@@ -25,10 +25,18 @@ i okrzyki. Gotowy tekst do wklejenia: [`disco-chants.txt`](disco-chants.txt).
 
 Result / Wynik: 2:58, 4.1 MB; the model reported about 220 BPM, G minor / model podał ok. 220 BPM, tonacja g-moll.
 
-How to use / Jak użyć: pick the settings above, paste `disco-chants.txt` into the lyrics field, click
-**Generate music** / ustaw powyższe, wklej `disco-chants.txt` w pole tekstu, kliknij **Generuj muzykę**.
-Note: in the "music + choir shouts" mode Gemma does not write lyrics — you enter the shouts yourself
-(see the in-app help) / w trybie „tylko muzyka + okrzyki” Gemma nie pisze tekstu — okrzyki wpisujesz sam.
+**Vocals note / Uwaga o wokalu.** The screenshot was made with *music + choir shouts* (`backing calls`). That mode tells the
+model "no lead vocal", so it mostly shouts the bracketed lines `( )` and skips the plain ones. To have the plain lines
+sung too, choose **choir** (or a duet) in the Vocals field. Sections tagged `Instrumental` / `Solo` / `Break` should have
+no text under them — the app warns about that before generating.
+Zrzut powstał w trybie *tylko muzyka + okrzyki*. Ten tryb mówi modelowi „bez głównego wokalu”, więc głównie krzyczy wersy
+w nawiasach `( )`, a zwykłe pomija. Żeby śpiewał też zwykłe wersy, wybierz **chór** (albo duet) w polu Wokal. Sekcje
+oznaczone `Instrumental` / `Solo` / `Break` nie powinny mieć tekstu pod spodem — aplikacja ostrzega o tym przed generowaniem.
+
+How to use / Jak użyć: pick the settings above (Vocals: choir), paste `disco-chants.txt` into the lyrics field, click
+**Generate music** / ustaw powyższe (Wokal: chór), wklej `disco-chants.txt` w pole tekstu, kliknij **Generuj muzykę**.
+Note: in the "music + choir shouts" mode Gemma does not write lyrics — you enter them yourself
+(see the in-app help) / w trybie „tylko muzyka + okrzyki” Gemma nie pisze tekstu — wpisujesz go sam.
 
 ## Disco with claps (experimental) / Disco z klaskaniem (eksperyment)
 

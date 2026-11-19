@@ -177,6 +177,7 @@
     ['co', 'every'],
     ['Zamknij', 'Close'],
     // ---- Song Generator additions
+    ['w trybie „tylko muzyka + okrzyki” model śpiewa głównie wersy w nawiasach (…); żeby śpiewał zwykłe wersy, wybierz głos w polu Wokal', 'in the “music + choir shouts” mode the model mainly sings the bracketed lines (…); to make it sing plain lines, choose a voice in the Vocals field'],
     ['Pomoc', 'Help'],
     ['Wersja', 'Version'],
     ['Pomoc i informacje o programie', 'Help and about'],
@@ -191,6 +192,7 @@
     ['„Gemma: wypełnij tekst” uzupełnia kropki szablonu; Twoje własne wersy zostają bez zmian.', '“Gemma: fill in lyrics” completes the dots of the template; your own lines stay unchanged.'],
     ['„Dopasuj mój tekst do szablonu”: wklej gotowy tekst do pola „Twój gotowy tekst”, a Gemma ułoży go w zwrotki i refreny, nie dopisując własnych słów.', '“Fit my lyrics to the template”: paste your finished lyrics into the “Your finished lyrics” box and Gemma arranges them into verses and choruses without adding words of her own.'],
     ['„Szablon ▾” wstawia szkielet ze znacznikami [Verse], [Chorus], [Bridge]. Prawy przycisk myszy w polu tekstu wstawia pojedynczy znacznik.', '“Template ▾” inserts a skeleton with the tags [Verse], [Chorus], [Bridge]. A right click in the lyrics field inserts a single tag.'],
+    ['Sprzeczności: sekcje oznaczone Instrumental, Solo albo Break nie powinny mieć tekstu pod spodem, a tryb „tylko muzyka + okrzyki” śpiewa głównie wersy w nawiasach. Aplikacja ostrzega o tym przy generowaniu, ale niczego nie zmienia. Żeby model śpiewał zwykłe wersy, wybierz głos (np. chór).', 'Contradictions: sections marked Instrumental, Solo or Break should have no text under them, and the “music + choir shouts” mode mainly sings the bracketed lines. The app warns about this when generating but changes nothing. To make the model sing plain lines, choose a voice (e.g. choir).'],
     ['Klaskanie i inne efekty: model nie ma osobnego znacznika na efekty dźwiękowe. „(Clap your hands!)” w nawiasie to okrzyk chóru, a nie klaskanie. Najlepiej dopisać „hand claps” do opisu stylu i dodać sekcję [Instrumental - Hand Claps]; znaczniki z menu Instrumenty są próbą i nie dają gwarancji, więc wypróbuj kilka seedów.', 'Claps and other effects: the model has no separate tag for sound effects. “(Clap your hands!)” in brackets is a choir shout, not clapping. It is best to add “hand claps” to the style description and a [Instrumental - Hand Claps] section; the tags in the Instruments menu are an attempt with no guarantee, so try a few seeds.'],
     ['Pokrętła na górnym pasku', 'Controls in the top bar'],
     ['Tempo (BPM): puste = tempo gatunku albo dobór przez model. 70 to spokojnie, 120 żwawo.', 'Tempo (BPM): empty = the genre’s tempo or the model decides. 70 is calm, 120 lively.'],
@@ -288,6 +290,8 @@
     [/^Zła wartość: (.+)$/, 'Invalid value: $1'],
     [/^(.+) poza zakresem (.+)$/, '$1 out of range $2'],
     // ---- Song Generator additions
+    [/^pod \[(.+)\] jest tekst do śpiewania – znacznik instrumentalny go wycisza \(usuń tekst albo zmień znacznik\)$/, 'under [$1] there is text to sing – an instrumental tag mutes it (remove the text or change the tag)'],
+    [/^komponuję… (\d+) s · (.+)$/, 'composing… $1 s · $2'],
     [/^Czekam na wczytanie modelu(\.*) gotowe\.$/, 'Waiting for the model to load$1 done.'],
     [/^Czekam na wczytanie modelu(\.*)$/, 'Waiting for the model to load$1'],
     [/^Podmieniam model na '(.+)' \(admin API KoboldCpp\)\.$/, 'Switching the model to \'$1\' (KoboldCpp admin API).'],

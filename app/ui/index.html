@@ -337,6 +337,7 @@
         <li>„Gemma: wypełnij tekst” uzupełnia kropki szablonu; Twoje własne wersy zostają bez zmian.</li>
         <li>„Dopasuj mój tekst do szablonu”: wklej gotowy tekst do pola „Twój gotowy tekst”, a Gemma ułoży go w zwrotki i refreny, nie dopisując własnych słów.</li>
         <li>„Szablon ▾” wstawia szkielet ze znacznikami [Verse], [Chorus], [Bridge]. Prawy przycisk myszy w polu tekstu wstawia pojedynczy znacznik.</li>
+        <li>Sprzeczności: sekcje oznaczone Instrumental, Solo albo Break nie powinny mieć tekstu pod spodem, a tryb „tylko muzyka + okrzyki” śpiewa głównie wersy w nawiasach. Aplikacja ostrzega o tym przy generowaniu, ale niczego nie zmienia. Żeby model śpiewał zwykłe wersy, wybierz głos (np. chór).</li>
         <li>Klaskanie i inne efekty: model nie ma osobnego znacznika na efekty dźwiękowe. „(Clap your hands!)” w nawiasie to okrzyk chóru, a nie klaskanie. Najlepiej dopisać „hand claps” do opisu stylu i dodać sekcję [Instrumental - Hand Claps]; znaczniki z menu Instrumenty są próbą i nie dają gwarancji, więc wypróbuj kilka seedów.</li>
       </ul>
       <h3>Pokrętła na górnym pasku</h3>
@@ -762,6 +763,8 @@ $('musGo').onclick = async () => {
       }
       if (need > fit + 15) lenNote = ('tekst za długi na 5 min – końcówka może zostać ucięta');
     }
+    const warns = lyrConflicts(lyrics, voice);
+    if (warns.length) lenNote = (lenNote ? lenNote + ' · ' : '') + '⚠ ' + warns.join(' · ⚠ ');
     const caption = [genre, style, own, voice ? '' : 'instrumental', $('musFade').checked ? 'ends with a gentle fade-out' : '']
       .filter(Boolean).join(', ');
     if (!(await prepare('music', t => { $('musInfo').textContent = t; }))) return;
@@ -789,7 +792,7 @@ $('musGo').onclick = async () => {
     musTracks.unshift(t);
     showTrack(t);
     musRow(t, `${plan.duration || ''} s · ${(blob.size / 2 ** 20).toFixed(1)} MB`);
-    $('musInfo').textContent = `gotowe w ${((Date.now() - t0) / 1000).toFixed(0)} s`;
+    $('musInfo').textContent = `gotowe w ${((Date.now() - t0) / 1000).toFixed(0)} s` + (warns.length ? ' · ⚠ ' + warns.join(' · ⚠ ') : '');
   } catch (e) {
     $('musInfo').textContent = e.message;
   } finally { clearInterval(tick); $('musGo').disabled = false; }
@@ -1023,6 +1026,24 @@ function lyrAddDots(text) {
   return out.join('\n');
 }
 // Rough length of the lyrics in seconds: a sung line ~ 2 bars, a call ~ 1 bar, instrumental parts by kind.
+// Contradictions the model cannot resolve: lyrics under an instrumental tag, or plain lines in the "calls only"
+// mode (it sings only the bracketed shouts). Returns short warnings; the app warns, it never edits the text.
+function lyrConflicts(text, voice) {
+  const out = [];
+  let tag = '', n = 0, firstTag = '', plainLines = 0;
+  for (const raw of text.split('\n')) {
+    const l = raw.trim();
+    const m = /^\[(.+)\]$/.exec(l);
+    if (m) { tag = m[1]; continue; }
+    if (!l || l === '...') continue;
+    if (/^\(.*\)$/.test(l)) continue;  // bracketed shouts are background vocals
+    plainLines++;
+    if (/instrumental|solo|interlude|drum break|percussion break/i.test(tag)) { n++; if (!firstTag) firstTag = tag; }
+  }
+  if (n) out.push(`pod [${firstTag}] jest tekst do śpiewania – znacznik instrumentalny go wycisza (usuń tekst albo zmień znacznik)`);
+  if (voice === 'backing calls' && plainLines) out.push('w trybie „tylko muzyka + okrzyki” model śpiewa głównie wersy w nawiasach (…); żeby śpiewał zwykłe wersy, wybierz głos w polu Wokal');
+  return out.map(w => (window.I18N ? I18N.tr(w) : w));
+}
 function lyrSeconds(text) {
   const bpm = +$('musBpm').value || +($('musGenre').selectedOptions[0].dataset.bpm || 0) || 110;
   const bar = 4 * 60 / bpm;
