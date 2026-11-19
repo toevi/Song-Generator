@@ -51,6 +51,11 @@
   <h2>RAM</h2>
   <div class="row"><b>użycie</b><div class="bar" id="rutilB"><i></i></div><em id="rutil">—</em></div>
 </section>
+<section>
+  <h2>Wentylatory</h2>
+  <div class="row"><b>GPU</b><div class="bar" id="gfanB"><i></i></div><em id="gfan">—</em></div>
+  <div id="fans"></div>
+</section>
 <div id="err"></div>
 <script>
 const $ = id => document.getElementById(id);
@@ -74,6 +79,14 @@ async function tick() {
       setBar('gvram', g.vram_used / g.vram_total * 100, `${GB(g.vram_used)} / ${GB(g.vram_total)} GB`, [80, 95]);
       $('gpow').textContent = g.power == null ? '—' : Math.round(g.power) + ' W' + (g.clock ? ` · ${Math.round(g.clock)} MHz` : '');
     } else $('gname').textContent = 'brak odczytu (nvidia-smi)';
+    if (g) setBar('gfan', g.fan, g.fan == null ? '—' : Math.round(g.fan) + ' %', [101, 101]);
+    // CPU / case fans come from HWiNFO; rebuild the rows only when the list of fans changes
+    const fl = d.fans || [], key = fl.map(f => f.label).join('|');
+    if (key !== $('fans').dataset.key) {
+      $('fans').dataset.key = key;
+      $('fans').innerHTML = fl.map((f, i) => `<div class="row"><b></b><div class="off" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${f.label}">${f.label}</div><em id="fan${i}"></em></div>`).join('');
+    }
+    fl.forEach((f, i) => { $('fan' + i).textContent = f.rpm + ' rpm'; });
     const c = d.cpu;
     setBar('cutil', c.util, c.util == null ? '…' : Math.round(c.util) + ' %', [70, 95]);
     setBar('ctemp', c.temp, c.temp == null ? '—' : Math.round(c.temp) + ' °C', [75, 88]);

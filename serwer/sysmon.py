@@ -26,10 +26,10 @@ def _gpu():
         return None
     try:
         out = subprocess.run(
-            [exe, "--query-gpu=name,temperature.gpu,utilization.gpu,memory.used,memory.total,power.draw,clocks.sm",
+            [exe, "--query-gpu=name,temperature.gpu,utilization.gpu,memory.used,memory.total,power.draw,clocks.sm,fan.speed",
              "--format=csv,noheader,nounits"],
             capture_output=True, text=True, timeout=5, creationflags=_NOWIN).stdout
-        name, temp, util, used, total, power, clock = [x.strip() for x in out.splitlines()[0].split(",")]
+        name, temp, util, used, total, power, clock, fan = [x.strip() for x in out.splitlines()[0].split(",")]
 
         def num(x):
             try:
@@ -37,7 +37,7 @@ def _gpu():
             except ValueError:  # "[N/A]"
                 return None
         return {"name": name, "temp": num(temp), "util": num(util), "vram_used": num(used) * 2**20,
-                "vram_total": num(total) * 2**20, "power": num(power), "clock": num(clock)}
+                "vram_total": num(total) * 2**20, "power": num(power), "clock": num(clock), "fan": num(fan)}
     except (OSError, ValueError, IndexError, TypeError, subprocess.TimeoutExpired):
         return None
 
@@ -79,11 +79,12 @@ def _cpu_util():
 # ---------------------------------------------------------------- CPU temperatura (HWiNFO)
 
 HWINFO_MAP = "Global\\HWiNFO_SENS_SM2"
-SENSOR_TYPE_TEMP = 2
+SENSOR_TYPE_TEMP, SENSOR_TYPE_FAN = 1, 3  # enum HWiNFO: NONE=0 TEMP=1 VOLT=2 FAN=3 ...
 _TEMP_PREFER = ("tctl", "tdie", "cpu package", "cpu (")
 
 
-def _hwinfo_cpu_temp():
+def _hwinfo():
+    """{"temp": CPU °C albo None, "fans": [{"label", "rpm"}]} z HWiNFO; None, gdy nie działa."""
     k32 = ctypes.windll.kernel32
     k32.OpenFileMappingW.restype = wintypes.HANDLE
     k32.OpenFileMappingW.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.LPCWSTR]
@@ -102,20 +103,20 @@ def _hwinfo_cpu_temp():
             sig, _ver, _rev, _poll, _so, _ss, _sn, ro, rs, rn = struct.unpack("<IIIqIIIIII", ctypes.string_at(view, 44))
             if sig == 0 or not rn or not rs:
                 return None  # HWiNFO zamknięty albo 'zamrożony' (sygnatura 0xDEAD)
-            found = []
+            found, fans = [], []
             for i in range(min(rn, 2000)):
                 raw = ctypes.string_at(view + ro + i * rs, rs)
                 typ = struct.unpack_from("<I", raw, 0)[0]
-                if typ != SENSOR_TYPE_TEMP:
+                if typ not in (SENSOR_TYPE_TEMP, SENSOR_TYPE_FAN):
                     continue
-                label = raw[12:12 + 128].split(b"\0")[0].decode("latin-1").lower()
+                label = raw[12:12 + 128].split(b"\0")[0].decode("latin-1")
                 value = struct.unpack_from("<d", raw, 12 + 128 + 128 + 16)[0]
-                found.append((label, value))
-            for pref in _TEMP_PREFER:
-                for label, value in found:
-                    if pref in label:
-                        return round(value, 1)
-            return None
+                if typ == SENSOR_TYPE_FAN:
+                    fans.append({"label": label, "rpm": round(value)})
+                else:
+                    found.append((label.lower(), value))
+            temp = next((round(v, 1) for pref in _TEMP_PREFER for lab, v in found if pref in lab), None)
+            return {"temp": temp, "fans": fans}
         finally:
             k32.UnmapViewOfFile(view)
     finally:
@@ -131,9 +132,10 @@ def sample():
         if _CACHE["data"] is not None and now - _CACHE["t"] < 1.0:
             return _CACHE["data"]
         try:
-            temp = _hwinfo_cpu_temp()
+            hw = _hwinfo() or {}
         except Exception:  # noqa: BLE001 - brak czujnika nie może psuć reszty odczytu
-            temp = None
-        data = {"gpu": _gpu(), "cpu": {"util": _cpu_util(), "temp": temp}, "ram": _ram()}
+            hw = {}
+        data = {"gpu": _gpu(), "cpu": {"util": _cpu_util(), "temp": hw.get("temp")}, "ram": _ram(),
+                "fans": hw.get("fans")}
         _CACHE.update(t=now, data=data)
         return data

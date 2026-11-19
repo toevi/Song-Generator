@@ -27,3 +27,7 @@ puste na Ryzen 7 5700X), więc jest czytana z pamięci współdzielonej HWiNFO (
 wymaga uruchomionego HWiNFO z włączonym „Shared Memory Support”; bez tego pole pokazuje „—” i podpowiedź.
 Okienko zamyka się razem z głównym oknem (inaczej `webview.start` nie wróciłoby). Podejście odrzucone:
 LibreHardwareMonitor przez pythonnet — wymaga admina i własnego sterownika, za ciężkie.
+
+**Wentylatory:** GPU — `fan.speed` z `nvidia-smi` (% obrotów; 0% na jałowym to normalne, RTX 4070 zatrzymuje wentylatory
+poniżej progu temperatury). CPU/obudowa — odczyty typu FAN (obroty/min) z HWiNFO, lista budowana dynamicznie.
+Uwaga z pisania: w strukturze HWiNFO typ czujnika to TEMP=1, FAN=3 (pierwsza wersja miała błędnie TEMP=2).
