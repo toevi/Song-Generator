@@ -162,7 +162,7 @@ Wolny, melancholijny utwór: głos kobiecy, tonacja z listy **Tonacja** i najwol
 | Seed | -1 (random / losowo; this take: 1437504289) |
 | Fade out at the end / Wyciszenie na końcu | on / włączone |
 | Title / Tytuł | smooth jazz |
-| Style description / Opis stylu | `lush, melancholic, slow tempo , samotny spacer noca po manchatanie` |
+| Style description / Opis stylu | `lush, melancholic, slow tempo , samotny spacer nocą po Manhattanie` |
 | Lyrics / Tekst | left empty — Gemma writes them (e.g. `[Intro - Strings]`, `[Verse 1 - Female Vocal]`) / puste — pisze Gemma |
 
 Result / Wynik: 3:58, 5.7 MB, generated in 135 s; the model reported 70 BPM, C Major. The planner turned the description into
