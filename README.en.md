@@ -6,7 +6,8 @@ A local song generator for Windows. You enter a genre, a mood and (optionally) y
 the lyrics and composes the track. Everything runs **on your own computer**: no cloud, no accounts, no limits.
 
 - **Lyrics:** Gemma 4 12B writes the words, fills in a template (your own lines are kept) or arranges your finished
-  lyrics into verses and choruses; it also suggests a title.
+  lyrics into verses and choruses; it also suggests a title. The tag menu (right click in the lyrics box) holds the
+  tags from the ACE-Step documentation: sections, vocal control, energy and mood.
 - **Music:** ACE-Step 1.5 generates a track of up to 5 minutes (MP3 or WAV), with vocals in Polish, English,
   Italian, German, Spanish or French, or as an instrumental.
 - **Engine:** KoboldCpp (CUDA), started and switched by the app — you never have to operate it by hand.
@@ -53,8 +54,16 @@ Starting it a second time while it is already running brings the existing window
 4. **Save…** (one track) or tick several and **Save all**. Tracks are not saved automatically:
    the list disappears when the window is closed.
 
-Extra controls: **BPM** (empty = the genre's tempo), diffusion **Steps** 4–50 (more = more accurate, slower;
-default 8), **Seed** (`-1` = random; the same seed and description give the same track), **Fade out at the end**.
+Extra controls (all with an **auto** option, i.e. the model's default):
+- **Tempo** — five ranges from "slow" (60–80 BPM) to "very fast" (160–180 BPM); auto = the genre's tempo.
+- **Key** and **Time signature** (4/4, 3/4, 6/8).
+- diffusion **Steps** 4–50 (more = more accurate, slower; default 8), **Seed** (`-1` = random; the same seed and
+  description give the same track), **Fade out at the end**.
+- **Advanced** (under the style description): prompt fidelity, shift, planner creativity and strictness — short lists.
+- **Style words** — English words from the ACE-Step cheat sheet (mood, instruments, timbre…) appended to the style
+  description.
+
+Drag the vertical bar between the lyrics card and the track list to change their width.
 
 ### Help (?)
 
@@ -134,6 +143,7 @@ Production documentation: what broke, how it was fixed and what was rejected.
 | 2026-11-19 | The interface was Polish only. | A PL/EN switcher in the header, translations in `app\ui\i18n.js`: the mechanism swaps the visible text in place (exact strings first, then patterns for text with variables) while the pages stay Polish in the source. Checked with a DOM dump in headless Edge: no Polish text is left in English mode. Not translated: the user's and the model's own text; the engine log in the panel translates only known messages. |
 | 2026-11-19 | The pywebview folder picker opened but saved nothing. | "Save all" uses the ordinary save dialog for the first file and its folder for the rest. |
 | 2026-11-20 | The tag menu had only some of the tags in the ACE-Step documentation, and key and time signature were chosen by the model alone. | Based on the cheat sheet (the official `acestep-songwriting` guide plus the model author's tutorial): the menu gains section and dynamics tags (`[Build]`, `[Drop]`, `[Fade Out]`, `[Silence]`, `[Piano Interlude]`), vocal control (`[falsetto]`, `[harmonies]`, `[call and response]`…), an "Energy and mood" group and combined tags such as `[Verse 1 - Male Vocal]`; a "Style words" button with English words split by caption dimension; Key and Time signature lists (`keyscale`, `timesignature` in `music.py`; the user's choice beats the model's plan, like BPM). New warnings in `lyrConflicts`: `[Hand Claps]` without "hand claps" in the description, and a tag with more than two qualifiers. **Rejected:** marking unofficial tags in the menu itself — the documentation says tags are essentially free-form, so we warn only where we know what to fix. The "Template from the settings" randomizer now uses the new tags too: `[Drop]` after the build (dance), energy in the final chorus (`Final Chorus - Duet, high energy`), `[Fade Out]` after the outro, `Harmonies`/`Falsetto`/`Powerful Belting` in the bridge. The `keyscale`/`timesignature` fields are in the `/api` docs of the running KoboldCpp 1.124.2. An "Advanced" section: Prompt fidelity (`guidance_scale`), `shift`, `lm_temperature`, `lm_cfg_scale` (empty = default; the docs describe them by name only, so the effect is only audible after listening). The other cheat-sheet parameters (`infer_method`, `use_adg`, `cfg_interval_*`, `use_cot_*`) are not exposed by Kobold, so they were not added. |
+| 2026-11-20 | Tempo and the advanced options had to be typed as numbers; the cards had a fixed width. | Tempo is a list of five ranges (60–80, 90–110, 110–130, 130–150, 160–180 BPM; the middle of the range is sent) with an auto option; the four advanced fields are short lists (low/medium/high etc., values chosen by eye around the cheat-sheet defaults, to be checked by ear). A vertical bar between the cards changes their width (double click = default, stored in `localStorage`). **Rejected:** numeric fields with ranges — it is easy to type a value the model dislikes. |
 
 ## Open
 

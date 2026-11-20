@@ -6,7 +6,8 @@ Lokalny generator piosenek na Windows. Wpisujesz gatunek, nastrój i (opcjonalni
 napisze tekst i skomponuje utwór. Wszystko działa **na twoim komputerze**: bez chmury, bez kont, bez limitów.
 
 - **Tekst:** Gemma 4 12B pisze słowa piosenki, wypełnia szablon (twoje wersy zostają) albo układa twój gotowy tekst
-  w strukturę zwrotek i refrenów; proponuje też tytuł.
+  w strukturę zwrotek i refrenów; proponuje też tytuł. Menu znaczników (prawy przycisk w polu tekstu) zawiera
+  tagi z dokumentacji ACE-Step: sekcje, sterowanie głosem, energię i emocje.
 - **Muzyka:** ACE-Step 1.5 generuje utwór do 5 minut (MP3 lub WAV), z wokalem w języku polskim, angielskim,
   włoskim, niemieckim, hiszpańskim lub francuskim, albo sam podkład.
 - **Silnik:** KoboldCpp (CUDA), uruchamiany i przełączany przez aplikację — nie trzeba go obsługiwać ręcznie.
@@ -53,8 +54,15 @@ Drugie uruchomienie przy działającej aplikacji wynosi jej okno na wierzch.
 4. **Zapisz…** (jeden utwór) albo zaznacz kilka i **Zapisz wszystkie**. Utwory nie zapisują się same:
    historia znika po zamknięciu okna.
 
-Dodatkowe pokrętła: **BPM** (puste = tempo gatunku), **Kroki** dyfuzji 4–50 (więcej = dokładniej, wolniej;
-domyślnie 8), **Seed** (`-1` = losowo; ten sam seed i opis dają ten sam utwór), **Wyciszenie na końcu**.
+Dodatkowe pokrętła (wszystkie z opcją **auto**, czyli domyślne ustawienie modelu):
+- **Tempo** — pięć przedziałów od „wolno” (60–80 BPM) do „bardzo szybko” (160–180 BPM); auto = tempo gatunku.
+- **Tonacja** i **Metrum** (4/4, 3/4, 6/8).
+- **Kroki** dyfuzji 4–50 (więcej = dokładniej, wolniej; domyślnie 8), **Seed** (`-1` = losowo; ten sam seed
+  i opis dają ten sam utwór), **Wyciszenie na końcu**.
+- **Zaawansowane** (pod opisem stylu): wierność opisowi, shift, kreatywność i ścisłość planisty — krótkie listy.
+- **Słowa do opisu** — angielskie słowa z ściągi ACE-Step (emocja, instrumenty, barwa…) dopisywane do opisu stylu.
+
+Szerokość kart z tekstem i z listą utworów zmieniasz, przeciągając pionowy pasek między nimi.
 
 ### Pomoc (?)
 
@@ -134,6 +142,7 @@ Dokumentacja produkcyjna: co się psuło, jak naprawiono i co odrzucono.
 | 2026-11-19 | Interfejs był tylko po polsku. | Przełącznik PL/EN w nagłówku, tłumaczenia w `app\ui\i18n.js`: mechanizm podmienia widoczny tekst w miejscu (dokładne napisy, potem wzorce dla tekstów ze zmiennymi), a strony w źródle pozostają po polsku. Sprawdzone zrzutem DOM w Edge headless: po angielsku nie zostaje polski tekst. Nie tłumaczone: teksty użytkownika i modelu; log silnika w panelu tłumaczy tylko znane komunikaty. |
 | 2026-11-19 | Okno zapisu pywebview (wybieracz folderu) otwierało się, ale nic nie zapisywało. | „Zapisz wszystkie” używa zwykłego okna zapisu dla pierwszego pliku, a jego folder dla reszty. |
 | 2026-11-20 | Menu znaczników miało tylko część tagów z dokumentacji ACE-Step, a tonację i metrum wybierał wyłącznie model. | Na podstawie ściągi (oficjalny przewodnik `acestep-songwriting` + poradnik autora modelu): menu o tagi sekcji i dynamiki (`[Build]`, `[Drop]`, `[Fade Out]`, `[Silence]`, `[Piano Interlude]`), sterowanie głosem (`[falsetto]`, `[harmonies]`, `[call and response]`…), grupę „Energia i emocje” i tagi złożone typu `[Verse 1 - Male Vocal]`; przycisk „Słowa do opisu” z angielskimi słowami podzielonymi na wymiary opisu; listy Tonacja i Metrum (`keyscale`, `timesignature` w `music.py`, wybór użytkownika wygrywa z planem modelu jak BPM). Nowe ostrzeżenia w `lyrConflicts`: `[Hand Claps]` bez „hand claps” w opisie i tag z więcej niż dwoma dopiskami. **Odrzucone:** oznaczanie tagów nieoficjalnych w samym menu — dokumentacja mówi, że tagi są w gruncie rzeczy dowolne, więc ostrzegamy tylko tam, gdzie wiadomo, co poprawić. Losowanie „Szablonu wg ustawień” używa teraz też nowych tagów: `[Drop]` po buildzie (taniec), energia w finale (`Final Chorus - Duet, high energy`), `[Fade Out]` po outro, `Harmonies`/`Falsetto`/`Powerful Belting` w mostku. Pola `keyscale`/`timesignature` są w dokumentacji `/api` działającego KoboldCpp 1.124.2. Sekcja „Zaawansowane”: Wierność opisowi (`guidance_scale`), `shift`, `lm_temperature`, `lm_cfg_scale` (puste = domyślne; dokumentacja opisuje je tylko nazwą, więc skutek słychać dopiero po odsłuchu). Pozostałych parametrów ze ściągi (`infer_method`, `use_adg`, `cfg_interval_*`, `use_cot_*`) Kobold nie wystawia, więc ich nie dodano. |
+| 2026-11-20 | Tempo i opcje zaawansowane trzeba było wpisywać liczbami; karty były stałej szerokości. | Tempo to lista pięciu przedziałów (60–80, 90–110, 110–130, 130–150, 160–180 BPM; wysyłany jest środek przedziału) z opcją auto; cztery pola zaawansowane to krótkie listy (niska/średnia/wysoka itp., wartości dobrane na oko wokół domyślnych ze ściągi, do sprawdzenia przy odsłuchu). Pionowy pasek między kartami zmienia ich szerokość (dwuklik = domyślna, wartość w `localStorage`). **Odrzucone:** pola liczbowe z zakresami — łatwo wpisać wartość, której model nie lubi. |
 
 ## Otwarte
 
