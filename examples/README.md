@@ -139,9 +139,34 @@ app lets you paste your own text (**Your finished lyrics** + **Fit my lyrics to 
 Teksty od Gemmy bywają słabej jakości (proste rymy, powtórzenia), dlatego w apce można wkleić własny tekst
 (**Twój gotowy tekst** + **Dopasuj mój tekst do szablonu**) albo generować w ogóle bez tekstu.
 
-## Smooth jazz / Smooth jazz
+## Smooth jazz: a lonely night walk / Smooth jazz: samotny spacer nocą
 
-A relaxed smooth-jazz track made in the app (genre **Smooth jazz**).
-Spokojny utwór smooth jazz zrobiony w aplikacji (gatunek **Smooth jazz**).
+![Smooth jazz example / Przykład smooth jazz](../docs/example-jazz.png)
 
-**Listen / Posłuchaj:** [`smooth-jazz.mp3`](smooth-jazz.mp3) (about 4 min, 5.7 MB / ok. 4 min, 5,7 MB).
+A slow, melancholic track: a female voice, a key picked from the **Key** list and the slowest tempo range. Gemma wrote the lyrics
+(the first lines are visible in the screenshot). The style words are typed as in the app, including a Polish request at the end.
+Wolny, melancholijny utwór: głos kobiecy, tonacja z listy **Tonacja** i najwolniejszy przedział tempa. Tekst napisała Gemma
+(pierwsze wersy widać na zrzucie). Słowa stylu są wpisane tak jak w aplikacji, z polską prośbą na końcu.
+
+| Field / Pole | Value / Wartość |
+|---|---|
+| Genre / Gatunek | Smooth jazz |
+| Vocals / Wokal | female voice / głos kobiecy |
+| Singing language / Język śpiewu | English / angielski |
+| Length / Długość | 4 min |
+| Tempo (BPM) | 60–80 slow / wolno (70) |
+| Key / Tonacja | C Major |
+| Time signature / Metrum | auto |
+| Steps / Kroki | 16 |
+| Format | MP3 |
+| Seed | -1 (random / losowo; this take: 1437504289) |
+| Fade out at the end / Wyciszenie na końcu | on / włączone |
+| Title / Tytuł | smooth jazz |
+| Style description / Opis stylu | `lush, melancholic, slow tempo , samotny spacer noca po manchatanie` |
+| Lyrics / Tekst | left empty — Gemma writes them (e.g. `[Intro - Strings]`, `[Verse 1 - Female Vocal]`) / puste — pisze Gemma |
+
+Result / Wynik: 3:58, 5.7 MB, generated in 135 s; the model reported 70 BPM, C Major. The planner turned the description into
+`female vocals, sung by a woman, female lead singer, smooth jazz, mellow saxophone, soft electric piano, relaxed groove…`.
+Model podał 70 BPM, C-dur; planista rozwinął opis w `female vocals, sung by a woman, … smooth jazz, mellow saxophone, soft electric piano…`.
+
+**Listen / Posłuchaj:** [`smooth-jazz.mp3`](smooth-jazz.mp3) (5.7 MB).
