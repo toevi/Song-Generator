@@ -54,6 +54,11 @@ Starting it a second time while it is already running brings the existing window
 4. **Save…** (one track) or tick several and **Save all**. Tracks are not saved automatically:
    the list disappears when the window is closed.
 
+> **A note on Gemma's lyrics.** Lyrics written automatically by Gemma are often of poor quality (clichéd rhymes,
+> repetition, sometimes stilted language), and a song is only as good as its words. You can always **paste your own
+> lyrics** ("Your finished lyrics" + **Fit my lyrics to the template**, or type them straight in) or **generate without
+> lyrics** — pick "no vocals (backing track)".
+
 Extra controls (all with an **auto** option, i.e. the model's default):
 - **Tempo** — five ranges from "slow" (60–80 BPM) to "very fast" (160–180 BPM); auto = the genre's tempo.
 - **Key** and **Time signature** (4/4, 3/4, 6/8).

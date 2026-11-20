@@ -54,6 +54,11 @@ Drugie uruchomienie przy działającej aplikacji wynosi jej okno na wierzch.
 4. **Zapisz…** (jeden utwór) albo zaznacz kilka i **Zapisz wszystkie**. Utwory nie zapisują się same:
    historia znika po zamknięciu okna.
 
+> **Uwaga o tekstach od Gemmy.** Teksty pisane automatycznie przez Gemmę bywają słabej jakości (banalne rymy,
+> powtórzenia, czasem sztuczny język), a piosenka jest tak dobra, jak jej słowa. Zawsze możesz **wkleić własny tekst**
+> (pole „Twój gotowy tekst” + **Dopasuj mój tekst do szablonu**, albo wpisać go wprost) lub **generować bez tekstu**
+> — wybierz „bez wokalu (podkład)”.
+
 Dodatkowe pokrętła (wszystkie z opcją **auto**, czyli domyślne ustawienie modelu):
 - **Tempo** — pięć przedziałów od „wolno” (60–80 BPM) do „bardzo szybko” (160–180 BPM); auto = tempo gatunku.
 - **Tonacja** i **Metrum** (4/4, 3/4, 6/8).
