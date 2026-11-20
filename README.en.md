@@ -22,6 +22,10 @@ Ready-made settings and lyrics to paste: [`examples\`](examples/README.md) (to s
 
 ![Example: disco with shouts](docs/example-disco.png)
 
+A second example, with a track to listen to: the metal song "Noc na starym zamku" with lyrics written by Gemma — [`examples\`](examples/README.md).
+
+![Example: a night at the old castle](docs/example-castle.png)
+
 ### Video
 
 [![Song Generator on YouTube](https://img.youtube.com/vi/_ENoNxXPGgs/hqdefault.jpg)](https://youtu.be/_ENoNxXPGgs)

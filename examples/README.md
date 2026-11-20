@@ -98,3 +98,43 @@ Najprostszy sposób użycia: bez własnego tekstu, tylko gatunek i krótki opis.
 [`disco-san-francisco.mp3`](disco-san-francisco.mp3) i drugie podejście z tymi samymi ustawieniami, [`disco-san-francisco-2.mp3`](disco-san-francisco-2.mp3) (po 4,1 MB).
 The lyrics are different on every run, so there are no text files for these. The two takes show how much the result varies.
 Tekst za każdym razem wychodzi inny, więc nie ma dla nich plików z tekstem. Dwa podejścia pokazują, jak bardzo wynik się różni.
+
+## Metal: a night at a haunted castle / Metal: noc na starym zamku
+
+![Castle example / Przykład: zamek](../docs/example-castle.png)
+
+A short style description plus a request for the topic; Gemma wrote the lyrics (the first lines are visible in the screenshot),
+ACE-Step made the track. Key and time signature were set in the new **Key** and **Time signature** lists, the tempo from the list of ranges.
+Krótki opis stylu i prośba o temat; tekst napisała Gemma (pierwsze wersy widać na zrzucie), muzykę zrobił ACE-Step. Tonację i metrum
+ustawiono w nowych listach **Tonacja** i **Metrum**, tempo z listy przedziałów.
+
+| Field / Pole | Value / Wartość |
+|---|---|
+| Genre / Gatunek | Metal |
+| Vocals / Wokal | male and female duet / duet kobieta + mężczyzna |
+| Singing language / Język śpiewu | English / angielski |
+| Length / Długość | 3 min |
+| Tempo (BPM) | 130–150 fast / szybko (140) |
+| Key / Tonacja | D Major |
+| Time signature / Metrum | 4/4 |
+| Steps / Kroki | 16 |
+| Format | MP3 |
+| Seed | -1 (random / losowo; this take: 613175721) |
+| Fade out at the end / Wyciszenie na końcu | on / włączone |
+| Title / Tytuł | noc na starym zamku |
+| Style description / Opis stylu | `energetic, electric bass, punchy, 2010s EDM, high-fidelity, powerful, fast-paced, building intro, dramatic bridge, napisz utwor noc na starym zamku gdzie straszy` |
+| Lyrics / Tekst | left empty — Gemma writes them (structure tags such as `[Intro - Full Band]`, `[Verse 1 - Female Vocal]`) / puste — pisze Gemma |
+
+The style words come from the **Style words** menu (mood, instruments, timbre, era, structure); the last part is a plain request in Polish.
+Słowa stylu pochodzą z menu **Słowa do opisu** (nastrój, instrumenty, barwa, epoka, struktura); ostatnia część to zwykła prośba po polsku.
+
+Result / Wynik: 2:58, 4.3 MB, generated in 101 s; the model reported 140 BPM, D Major. The planner turned the description into
+`male and female duet vocals… heavy metal, fast palm-muted riffs, double bass drums, aggressive…` and added the fade-out.
+Model podał 140 BPM, D-dur; planista rozwinął opis w `male and female duet vocals… heavy metal, fast palm-muted riffs, double bass drums, aggressive…`.
+
+**Listen / Posłuchaj:** [`noc-na-starym-zamku.mp3`](noc-na-starym-zamku.mp3) (4.3 MB).
+
+**About the lyrics / O tekście.** Lyrics written by Gemma are often of poor quality (simple rhymes, repetition). This is why the
+app lets you paste your own text (**Your finished lyrics** + **Fit my lyrics to the template**) or generate with no lyrics at all.
+Teksty od Gemmy bywają słabej jakości (proste rymy, powtórzenia), dlatego w apce można wkleić własny tekst
+(**Twój gotowy tekst** + **Dopasuj mój tekst do szablonu**) albo generować w ogóle bez tekstu.

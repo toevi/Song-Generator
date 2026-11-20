@@ -22,6 +22,10 @@ Gotowe ustawienia i tekst do wklejenia: [`examples\`](examples/README.md) (na po
 
 ![Przykład: disco z okrzykami](docs/example-disco.png)
 
+Drugi przykład, z posłuchaniem: metal „Noc na starym zamku” z tekstem od Gemmy — [`examples\`](examples/README.md).
+
+![Przykład: noc na starym zamku](docs/example-castle.png)
+
 ### Film
 
 [![Song Generator na YouTube](https://img.youtube.com/vi/_ENoNxXPGgs/hqdefault.jpg)](https://youtu.be/_ENoNxXPGgs)
