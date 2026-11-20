@@ -1176,6 +1176,9 @@ function lyrSkeleton() {
     : len <= 150 ? ['IVCVCO', 'IVPCVPCO', 'ICVCVCO', 'IVCQVCQO', 'IVVCVCO', 'IVCVCBCO']
     : len < 240 ? ['IVPCVPCSBFO', 'IVCVCSBFO', 'ICVPCVPCBFO', 'IVPCQVPCQDUFO', 'IVCVCBSFFO', 'IVVCVCSBFO']
     : ['IVPCVPCSVCBFO', 'IVCQVCQSVCBUFFO', 'ICVPCVPCSBDUFO', 'IVPCVPCBSVCFFO', 'IVCVCSVCBFO'];
+  // Official ACE-Step tags (cheat sheet): energy words for the final chorus, delivery words for the bridge.
+  const energy = { dance: ['high energy', 'euphoric'], rock: ['high energy', 'explosive'], rap: ['high energy', 'aggressive'],
+                   jazz: ['high energy', 'building energy'], soft: ['building energy', 'dreamy'], pop: ['high energy', 'euphoric', 'anthemic'] }[fam];
   const plan = pick(plans);
   const vN = len <= 30 ? 4 : fam === 'rap' ? pick([8, 8, 12]) : pick([4, 4, 6, 8]), cN = len <= 30 ? 4 : pick([4, 4, 6]), pN = pick([2, 2, 3]), bN = pick([2, 4, 4]);
   const call = r(0.6) ? pick(F.calls) : '';
@@ -1197,18 +1200,21 @@ function lyrSkeleton() {
     else if (s === 'S') out.push(`[${pick(F.solo)}]`);
     else if (s === 'B' && calls) out.push(pick(['[Bridge - Instrumental]', '[Breakdown]', `[${pick(F.solo)}]`]));
     else if (s === 'B') {
-      const how = fam === 'soft' && r() ? 'Whispered' : fam === 'rap' && r() ? 'Spoken' : choir && r() ? 'A cappella' : duet ? 'Duet' : lead;
+      const how = fam === 'soft' && r() ? pick(['Whispered', 'Falsetto']) : fam === 'rap' && r() ? 'Spoken' : choir && r() ? 'A cappella'
+        : duet ? (r(0.3) ? 'Harmonies' : 'Duet') : (fam === 'rock' || fam === 'pop') && r(0.3) ? 'Powerful Belting' : lead;
       out.push(`[Bridge - ${how}]\n${dots(bN)}`);
     }
     else if (s === 'D') out.push('[Breakdown]');
+    else if (s === 'U' && fam === 'dance' && r(0.5)) out.push(`[Build-Up - Backing Vocals]\n${pick(['(Ooooh!)', '(Aaah)', '(Woah-oh-oh)'])}\n\n[Drop]`);
     else if (s === 'U') out.push(`[Build-Up - Backing Vocals]\n${pick(['(Ooooh!)', '(Aaah)', '(Woah-oh-oh)'])}`);
     else if (s === 'F' && calls) out.push(`[Final Chorus - Group Chant]\n${shouts(3, call)}`);
     else if (s === 'F') {
       finals++;
       const who = choir || r(0.5) ? `${duet ? 'Duet' : lead} + Choir` : chV;
-      out.push(`[${finals > 1 ? 'Final Chorus - Key Change' : 'Final Chorus'} - ${who}]\n${dots(cN)}\n${call || pick(F.calls)}`);
+      const tag = finals > 1 ? `Final Chorus - Key Change - ${who}` : r(0.5) ? `Final Chorus - ${who}, ${pick(energy)}` : `Final Chorus - ${who}`;
+      out.push(`[${tag}]\n${dots(cN)}\n${call || pick(F.calls)}`);
     }
-    else if (s === 'O') out.push(`[${pick(F.outro)}]`);
+    else if (s === 'O') { const o = pick(F.outro); out.push(`[${o}]` + (!/Fade Out/.test(o) && r(0.3) ? '\n\n[Fade Out]' : '')); }
   }
   out.push('[End]');
   return out.join('\n\n') + '\n';
