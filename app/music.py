@@ -64,6 +64,10 @@ def generate_music(req):
         body["keyscale"] = key
     if meter in METERS:
         body["timesignature"] = meter
+    # Advanced ACE-Step knobs (empty = the model's default): the user's value is sent as typed, within sane limits.
+    for k, lo, hi in (("guidance_scale", 0, 15), ("shift", 1, 5), ("lm_temperature", 0, 2), ("lm_cfg_scale", 1, 5)):
+        if str(req.get(k) or "").strip():
+            body[k] = num(k, lo, hi, 0, float)
     timeout = E.config().get("timeout_s", 600)
     plan = E.call("/api/extra/music/prepare", body, timeout=timeout)
     if not isinstance(plan, dict) or plan.get("error") or not str(plan.get("audio_codes") or "").strip():
@@ -74,7 +78,7 @@ def generate_music(req):
              "gen_codes": False, "rewrite_caption": False}
     if "bpm" in body:  # tempo of the chosen style or typed by the user wins over the planner's pick
         final["bpm"] = body["bpm"]
-    for k in ("keyscale", "timesignature"):  # a key or metre chosen by the user wins over the planner's pick
+    for k in ("keyscale", "timesignature", "guidance_scale", "shift"):  # the user's choice wins over the planner's pick
         if k in body:
             final[k] = body[k]
     audio, ctype = E.raw("/api/extra/music/generate", final, timeout)

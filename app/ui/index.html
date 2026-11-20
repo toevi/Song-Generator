@@ -259,6 +259,18 @@
         <input id="musTitle" maxlength="80" placeholder="np. Letnia noc nad jeziorem">
         <label for="musPrompt">Opis stylu – nastrój, do czego (opcjonalnie)</label>
         <textarea id="musPrompt" rows="2" placeholder="np. spokojny podkład do filmu z gór, ciepły i optymistyczny"></textarea>
+        <details id="musAdv"><summary>Zaawansowane (model muzyki)</summary>
+          <div class="row">
+            <div class="tf"><label for="musGuid" title="guidance_scale: wyżej = wierniej opisowi, ale ryzyko przesterowania. Puste = domyślne (1)">Wierność opisowi</label>
+              <input id="musGuid" type="number" min="0" max="15" step="0.5" placeholder="auto"></div>
+            <div class="tf"><label for="musShift" title="shift: wyżej = najpierw struktura (mocniejsza semantyka), niżej = więcej detalu. Puste = domyślne">Shift</label>
+              <input id="musShift" type="number" min="1" max="5" step="0.5" placeholder="auto"></div>
+            <div class="tf"><label for="musLmTemp" title="lm_temperature: wyżej = kreatywniej, niżej = zachowawczo. Domyślnie 0,85">Kreatywność planisty</label>
+              <input id="musLmTemp" type="number" min="0" max="2" step="0.05" placeholder="0.85"></div>
+            <div class="tf"><label for="musLmCfg" title="lm_cfg_scale: wyżej = planista ściślej trzyma się opisu. Domyślnie 2">Ścisłość planisty</label>
+              <input id="musLmCfg" type="number" min="1" max="5" step="0.5" placeholder="2"></div>
+          </div>
+        </details>
         <div class="row"><button class="ghost small" id="musCapBtn" title="Słowa angielskie z ściągi ACE-Step; kliknięcie dopisuje słowo do opisu stylu">Słowa do opisu ▾</button></div>
         <div class="vocal musbody">
           <label for="musLyrics">Tekst piosenki – znaczniki [Verse 1], [Chorus], [Bridge] (puste = Gemma napisze z opisu; prawy przycisk = wstaw znacznik)</label>
@@ -354,6 +366,7 @@
         <li>Tempo (BPM): puste = tempo gatunku albo dobór przez model. 70 to spokojnie, 120 żwawo.</li>
         <li>Kroki: liczba kroków dyfuzji, 4–50. Więcej daje dokładniejszy, ale wolniejszy utwór. Domyślnie 8.</li>
         <li>Tonacja i Metrum: puste = dobiera model. Najstabilniejsze są C, G, D, Am, Em oraz 4/4; 3/4 to walc, 6/8 swing.</li>
+        <li>Zaawansowane (pod opisem stylu): Wierność opisowi (guidance), Shift, Kreatywność i Ścisłość planisty (temperatura i CFG modelu, który układa plan utworu). Puste = ustawienia domyślne. Przy porównywaniu ustawień ustal seed, żeby losowość nie zakłócała wyniku.</li>
         <li>Seed: −1 oznacza losowo. Ten sam seed i ten sam opis dają ten sam utwór.</li>
         <li>Format: MP3 to mały plik, WAV jest bez strat i zajmuje kilkadziesiąt MB.</li>
       </ul>
@@ -787,6 +800,8 @@ $('musGo').onclick = async () => {
                              bpm: +$('musBpm').value || +($('musGenre').selectedOptions[0].dataset.bpm || 0),
                              format: fmt, seed: +$('musSeed').value, steps: +$('musSteps').value || 8,
                              keyscale: $('musKey').value, timesignature: $('musMeter').value,
+                             guidance_scale: $('musGuid').value, shift: $('musShift').value,
+                             lm_temperature: $('musLmTemp').value, lm_cfg_scale: $('musLmCfg').value,
                              ...(voice ? { lyrics, vocal_language: $('musLang').value, voice } : {}) }) });
     if ((res.headers.get('Content-Type') || '').includes('json')) throw new Error((await res.json()).error || 'błąd');
     let plan = {};
@@ -963,7 +978,7 @@ function lyrMenu(x, y) {
 $('musLyrics').addEventListener('contextmenu', e => { if (e.shiftKey) return; e.preventDefault(); lyrMenu(e.clientX, e.clientY); });
 document.addEventListener('mousedown', e => { if (!e.target.closest('.ctx')) document.querySelector('.ctx')?.remove(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelector('.ctx')?.remove(); });
-for (const id of ['musLen', 'musFmt', 'musGenre', 'musStyle', 'musSteps', 'musBpm', 'musKey', 'musMeter']) {
+for (const id of ['musLen', 'musFmt', 'musGenre', 'musStyle', 'musSteps', 'musBpm', 'musKey', 'musMeter', 'musGuid', 'musShift', 'musLmTemp', 'musLmCfg']) {
   const v = store.get(id, null);
   if (v !== null) $(id).value = v;
   $(id).addEventListener('change', () => store.set(id, $(id).value));
