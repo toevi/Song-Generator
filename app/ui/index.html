@@ -90,7 +90,11 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* ---- music: text | player + tracks, each column scrolls on its own */
-  .musgrid { flex: 1; min-height: 0; display: grid; gap: 16px; grid-template-columns: minmax(380px, 1.5fr) minmax(320px, 1fr); }
+  .musgrid { flex: 1; min-height: 0; display: grid; gap: 16px; grid-template-columns: var(--cols, minmax(380px, 1.5fr)) 10px minmax(320px, 1fr); gap: 0; }
+  .musgrid > .mustracks { min-width: 0; }
+  .splitter { cursor: col-resize; position: relative; touch-action: none; }
+  .splitter::after { content: ''; position: absolute; inset: 0 3px; border-radius: 2px; background: var(--line); opacity: .6; }
+  .splitter:hover::after, .splitter.drag::after { background: var(--accent); opacity: 1; }
   .musgrid > .card { min-height: 0; overflow: auto; }
   .muslyr .musbody { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
   #musLyrics { flex: 1; min-height: 260px; resize: none; }
@@ -100,7 +104,7 @@
   .lyrbar #musTagBtns { display: contents; }
   #musSelBar { display: contents; }
   @media (max-width: 900px) {
-    .musgrid { grid-template-columns: 1fr; }
+    .musgrid { grid-template-columns: 1fr; gap: 16px; } .splitter { display: none; }
     #view-music.active { flex: 1 0 auto; } .musgrid > .card { overflow: visible; }
   }
   .mlist { display: flex; flex-direction: column; overflow: auto; flex: 1; min-height: 200px; }
@@ -291,6 +295,7 @@
         </div>
         <p class="hint musnovocal">Utwór bez śpiewu. Wybierz <b>Wokal</b> na górnym pasku, żeby pisać tekst, wstawić szablon albo dopasować własny tekst.</p>
       </div>
+      <div class="splitter" id="musSplit" title="Przeciągnij, żeby zmienić szerokość okien (dwuklik = domyślna)"></div>
       <div class="card mustracks">
         <div id="musResult"><span class="hint">tu pojawi się utwór</span></div>
         <div class="row">
@@ -373,6 +378,7 @@
         <li>Kroki: liczba kroków dyfuzji, 4–50. Więcej daje dokładniejszy, ale wolniejszy utwór. Domyślnie 8.</li>
         <li>Tonacja i Metrum: puste = dobiera model. Najstabilniejsze są C, G, D, Am, Em oraz 4/4; 3/4 to walc, 6/8 swing.</li>
         <li>Zaawansowane (pod opisem stylu): Wierność opisowi (guidance), Shift, Kreatywność i Ścisłość planisty (temperatura i CFG modelu, który układa plan utworu). Auto = ustawienia domyślne; reszta to krótkie listy (niska, średnia, wysoka itp.). Przy porównywaniu ustawień ustal seed, żeby losowość nie zakłócała wyniku.</li>
+        <li>Szerokość okien: przeciągnij pionowy pasek między kartą z tekstem a listą utworów; dwuklik przywraca domyślną. Szerokość jest zapamiętywana.</li>
         <li>Seed: −1 oznacza losowo. Ten sam seed i ten sam opis dają ten sam utwór.</li>
         <li>Format: MP3 to mały plik, WAV jest bez strat i zajmuje kilkadziesiąt MB.</li>
       </ul>
@@ -1301,6 +1307,28 @@ $('musCapBtn').onclick = () => {
   menu.style.left = Math.min(b.left, innerWidth - menu.offsetWidth - 4) + 'px';
   menu.style.top = (b.bottom + 4) + 'px';
 };
+
+// Draggable divider between the lyrics card and the tracks card; the width is remembered.
+(function () {
+  const grid = document.querySelector('.musgrid'), split = $('musSplit'), KEY = 'musCols';
+  const apply = px => { if (px) grid.style.setProperty('--cols', px + 'px'); else grid.style.removeProperty('--cols'); };
+  const saved = +store.get(KEY, 0);
+  if (saved) apply(saved);
+  split.addEventListener('pointerdown', e => {
+    e.preventDefault(); split.setPointerCapture(e.pointerId); split.classList.add('drag');
+    const left = grid.getBoundingClientRect().left;
+    const move = ev => {
+      const w = grid.clientWidth, px = Math.round(Math.min(w - 330, Math.max(380, ev.clientX - left)));
+      apply(px); split.dataset.px = px;
+    };
+    const up = () => {
+      split.classList.remove('drag'); split.removeEventListener('pointermove', move); split.removeEventListener('pointerup', up);
+      if (split.dataset.px) store.set(KEY, +split.dataset.px);
+    };
+    split.addEventListener('pointermove', move); split.addEventListener('pointerup', up);
+  });
+  split.addEventListener('dblclick', () => { apply(0); delete split.dataset.px; store.set(KEY, 0); });
+})();
 
 showView('music');
 refreshStatus();
