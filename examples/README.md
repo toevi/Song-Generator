@@ -138,3 +138,10 @@ Model podał 140 BPM, D-dur; planista rozwinął opis w `male and female duet vo
 app lets you paste your own text (**Your finished lyrics** + **Fit my lyrics to the template**) or generate with no lyrics at all.
 Teksty od Gemmy bywają słabej jakości (proste rymy, powtórzenia), dlatego w apce można wkleić własny tekst
 (**Twój gotowy tekst** + **Dopasuj mój tekst do szablonu**) albo generować w ogóle bez tekstu.
+
+## Smooth jazz / Smooth jazz
+
+A relaxed smooth-jazz track made in the app (genre **Smooth jazz**).
+Spokojny utwór smooth jazz zrobiony w aplikacji (gatunek **Smooth jazz**).
+
+**Listen / Posłuchaj:** [`smooth-jazz.mp3`](smooth-jazz.mp3) (about 4 min, 5.7 MB / ok. 4 min, 5,7 MB).
