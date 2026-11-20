@@ -234,6 +234,11 @@
         <option value="300">5 min</option></select></div>
     <div class="tf"><label for="musBpm" title="Puste = tempo gatunku albo dobór przez model. 70 = spokojnie, 120 = żwawo">Tempo (BPM)</label>
       <input id="musBpm" type="number" min="40" max="220" placeholder="auto"></div>
+    <div class="tf"><label for="musKey" title="Puste = dobiera model. Najstabilniejsze: C, G, D, Am, Em">Tonacja</label>
+      <select id="musKey"><option value="">auto</option><option>C Major</option><option>G Major</option><option>D Major</option><option>F Major</option>
+        <option>A Minor</option><option>E Minor</option><option>D Minor</option><option>B Minor</option></select></div>
+    <div class="tf"><label for="musMeter" title="4/4 najpewniejsze, 3/4 walc, 6/8 swing">Metrum</label>
+      <select id="musMeter"><option value="">auto</option><option>4/4</option><option>3/4</option><option>6/8</option></select></div>
     <div class="tf"><label for="musSteps" title="Kroki dyfuzji 4–50: więcej = dokładniej, ale wolniej. Domyślnie 8">Kroki</label>
       <input id="musSteps" type="number" min="4" max="50" value="8"></div>
     <div class="tf"><label for="musFmt" title="MP3 – mały plik; WAV – bez strat, kilkadziesiąt MB">Format</label>
@@ -254,6 +259,7 @@
         <input id="musTitle" maxlength="80" placeholder="np. Letnia noc nad jeziorem">
         <label for="musPrompt">Opis stylu – nastrój, do czego (opcjonalnie)</label>
         <textarea id="musPrompt" rows="2" placeholder="np. spokojny podkład do filmu z gór, ciepły i optymistyczny"></textarea>
+        <div class="row"><button class="ghost small" id="musCapBtn" title="Słowa angielskie z ściągi ACE-Step; kliknięcie dopisuje słowo do opisu stylu">Słowa do opisu ▾</button></div>
         <div class="vocal musbody">
           <label for="musLyrics">Tekst piosenki – znaczniki [Verse 1], [Chorus], [Bridge] (puste = Gemma napisze z opisu; prawy przycisk = wstaw znacznik)</label>
           <textarea id="musLyrics" placeholder="[verse]&#10;Idę przez miasto o świcie&#10;...&#10;&#10;[chorus]&#10;..."></textarea>
@@ -339,12 +345,15 @@
         <li>„Szablon ▾” wstawia szkielet ze znacznikami [Verse], [Chorus], [Bridge]. Prawy przycisk myszy w polu tekstu wstawia pojedynczy znacznik.</li>
         <li>Warto wpisać opis stylu: bez niego model robi zwykle bardziej ogólny utwór. Wystarczy kilka słów, np. „metal lata 90”. Opis nie gwarantuje wokalu – model czasem zaczyna śpiewać dopiero w dalszej części utworu.</li>
         <li>Sprzeczności: sekcje oznaczone Instrumental, Solo albo Break nie powinny mieć tekstu pod spodem, a tryb „tylko muzyka + okrzyki” śpiewa głównie wersy w nawiasach. Aplikacja ostrzega o tym przy generowaniu, ale niczego nie zmienia. Żeby model śpiewał zwykłe wersy, wybierz głos (np. chór).</li>
+        <li>Menu znaczników (prawy przycisk albo przyciski nad polem) ma tagi z oficjalnej ściągi ACE-Step: sekcje i dynamikę ([Build], [Drop], [Breakdown], [Fade Out]), sterowanie głosem ([falsetto], [whispered], [harmonies]…) oraz energię i emocje ([high energy], [melancholic]…). Znacznik wstawiony pod samotnym znacznikiem sekcji łączy się z nim: [Chorus] + [high energy] daje [Chorus - high energy]. Do znacznika dopisuj najwyżej 1–2 określenia, resztę stylu wpisz do opisu.</li>
+        <li>„Słowa do opisu ▾” (pod opisem stylu) dopisuje do opisu angielskie słowa: emocję, instrumenty, barwę, epokę, wokal, tempo. Instrument z tagu w tekście (np. hand claps) warto wpisać też do opisu – jeden sygnał w dwóch miejscach działa pewniej.</li>
         <li>Klaskanie i inne efekty: model nie ma osobnego znacznika na efekty dźwiękowe. „(Clap your hands!)” w nawiasie to okrzyk chóru, a nie klaskanie. Najlepiej dopisać „hand claps” do opisu stylu i dodać sekcję [Instrumental - Hand Claps]; znaczniki z menu Instrumenty są próbą i nie dają gwarancji, więc wypróbuj kilka seedów.</li>
       </ul>
       <h3>Pokrętła na górnym pasku</h3>
       <ul>
         <li>Tempo (BPM): puste = tempo gatunku albo dobór przez model. 70 to spokojnie, 120 żwawo.</li>
         <li>Kroki: liczba kroków dyfuzji, 4–50. Więcej daje dokładniejszy, ale wolniejszy utwór. Domyślnie 8.</li>
+        <li>Tonacja i Metrum: puste = dobiera model. Najstabilniejsze są C, G, D, Am, Em oraz 4/4; 3/4 to walc, 6/8 swing.</li>
         <li>Seed: −1 oznacza losowo. Ten sam seed i ten sam opis dają ten sam utwór.</li>
         <li>Format: MP3 to mały plik, WAV jest bez strat i zajmuje kilkadziesiąt MB.</li>
       </ul>
@@ -777,6 +786,7 @@ $('musGo').onclick = async () => {
       body: JSON.stringify({ prompt: caption, duration: +$('musLen').value,
                              bpm: +$('musBpm').value || +($('musGenre').selectedOptions[0].dataset.bpm || 0),
                              format: fmt, seed: +$('musSeed').value, steps: +$('musSteps').value || 8,
+                             keyscale: $('musKey').value, timesignature: $('musMeter').value,
                              ...(voice ? { lyrics, vocal_language: $('musLang').value, voice } : {}) }) });
     if ((res.headers.get('Content-Type') || '').includes('json')) throw new Error((await res.json()).error || 'błąd');
     let plan = {};
@@ -835,10 +845,12 @@ $('musSaveSel').onclick = () => {
 // Lyrics box: right click opens a menu of ACE-Step tags (Shift + right click = the normal menu).
 const LYR_TAGS = [
   ['Struktura', ['[Intro]', '[Verse 1]', '[Verse 2]', '[Pre-Chorus]', '[Chorus]', '[Post-Chorus]', '[Bridge]',
-                 '[Breakdown]', '[Build-Up]', '[Final Chorus]', '[Outro]', '[End]']],
+                 '[Breakdown]', '[Build-Up]', '[Build]', '[Drop]', '[Final Chorus]', '[Outro]', '[Fade Out]', '[Silence]', '[End]']],
   ['Wokal', ['[Lead Vocal]', '[Female Vocal]', '[Male Vocal]', '[Duet]', '[Backing Vocals]', '[Backing Vocal Harmony]',
-             '[Female Choir]', '[Male Choir]', '[Choir]', '[Unison Vocals]', '[Vocal Ad-libs]', '[Spoken]', '[Whispered]', '[A cappella]']],
-  ['Instrumenty', ['[Instrumental]', '[Instrumental Break]', '[Guitar Solo]', '[Piano Solo]', '[Drum Break]', '[Fiddle Solo]',
+             '[Female Choir]', '[Male Choir]', '[Choir]', '[Unison Vocals]', '[Vocal Ad-libs]', '[Spoken]', '[Whispered]', '[A cappella]',
+             '[raspy vocal]', '[whispered]', '[falsetto]', '[powerful belting]', '[spoken word]', '[harmonies]', '[call and response]', '[ad-lib]']],
+  ['Energia i emocje', ['[high energy]', '[low energy]', '[building energy]', '[explosive]', '[melancholic]', '[euphoric]', '[dreamy]', '[aggressive]', '[anthemic]']],
+  ['Instrumenty', ['[Instrumental]', '[Instrumental Break]', '[Piano Interlude]', '[Guitar Solo]', '[Piano Solo]', '[Drum Break]', '[Fiddle Solo]',
                    '[Bass Solo]', '[Soft Piano]', '[Acoustic Guitar]', '[Full Band]', '[Drums Drop Out]', '[Instrumental - Hand Claps]', '[Percussion Break - Claps]']],
   ['Złożone (sekcja - głos)', ['[Intro - Instrumental]', '[Verse 1 - Male Vocal]', '[Verse 2 - Female Vocal]', '[Pre-Chorus - Male Vocal]',
                                '[Pre-Chorus - Female Vocal]', '[Chorus - Duet]', '[Post-Chorus - Backing Vocals]', '[Build-Up - Backing Vocals]',
@@ -846,6 +858,17 @@ const LYR_TAGS = [
   ['Wstawki chórku', ['(Oh yeah!)', '(Hey! Hey!)', '(Ooooh!)', '(La la la)', '(Na na na)', '(Woah-oh-oh)', '(Yeah, yeah, yeah)',
                       '(Uh-huh)', '(Come on!)', '(Ho! Hey!)', '(Aaah)', '(Ooh-ooh)', '(Shoo-bee-doo-wop)', '(Doo-doo-doo)',
                       '(Everybody!)', '(One more time!)', '(Let’s go!)', '(Clap your hands!)', '(Hej! Hej!)', '(Jeszcze raz!)']],
+];
+// Caption words by dimension (ACE-Step cheat sheet): a click appends the word to the style description.
+const CAP_WORDS = [
+  ['Emocja', ['melancholic', 'uplifting', 'energetic', 'dreamy', 'dark', 'nostalgic', 'euphoric', 'intimate']],
+  ['Instrumenty', ['acoustic guitar', 'piano', 'synth pads', '808 drums', 'strings', 'brass', 'electric bass', 'hand claps']],
+  ['Barwa', ['warm', 'bright', 'crisp', 'airy', 'punchy', 'lush', 'raw', 'polished']],
+  ['Epoka', ['80s synth-pop', '90s grunge', '2010s EDM', 'vintage soul', 'modern trap']],
+  ['Produkcja', ['lo-fi', 'high-fidelity', 'live recording', 'studio-polished', 'bedroom pop']],
+  ['Wokal', ['breathy', 'powerful', 'falsetto', 'raspy', 'choir', 'male and female duet']],
+  ['Tempo i rytm', ['slow tempo', 'mid-tempo', 'fast-paced', 'groovy', 'driving', 'laid-back']],
+  ['Struktura', ['building intro', 'catchy chorus', 'dramatic bridge', 'fade-out ending']],
 ];
 // The cheat-sheet layout; "..." marks the places for words (typed by hand or filled by Gemma).
 const LYR_TEMPLATE = `[Intro - Instrumental]
@@ -940,7 +963,7 @@ function lyrMenu(x, y) {
 $('musLyrics').addEventListener('contextmenu', e => { if (e.shiftKey) return; e.preventDefault(); lyrMenu(e.clientX, e.clientY); });
 document.addEventListener('mousedown', e => { if (!e.target.closest('.ctx')) document.querySelector('.ctx')?.remove(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelector('.ctx')?.remove(); });
-for (const id of ['musLen', 'musFmt', 'musGenre', 'musStyle', 'musSteps', 'musBpm']) {
+for (const id of ['musLen', 'musFmt', 'musGenre', 'musStyle', 'musSteps', 'musBpm', 'musKey', 'musMeter']) {
   const v = store.get(id, null);
   if (v !== null) $(id).value = v;
   $(id).addEventListener('change', () => store.set(id, $(id).value));
@@ -1044,6 +1067,10 @@ function lyrConflicts(text, voice) {
     plainLines++;
     if (/instrumental|solo|interlude|drum break|percussion break/i.test(tag)) { n++; if (!firstTag) firstTag = tag; }
   }
+  const cap = ($('musPrompt').value + ' ' + $('musGenre').value + ' ' + $('musStyle').value).toLowerCase();
+  if (/^\[(hand )?claps?\b/im.test(text) && !/claps/.test(cap)) out.push('tag [Hand Claps] w tekście – dopisz „hand claps” do opisu stylu');
+  const longTag = (text.match(/^\[[^\]\n]*\]$/gm) || []).find(t => t.split(/\s-\s|,/).length > 3);
+  if (longTag) out.push(`tag ${longTag} ma za dużo dopisków – styl lepiej wpisać do opisu`);
   if (n) out.push(`pod [${firstTag}] jest tekst – znacznik instrumentalny go wycisza`);
   if (voice === 'backing calls' && plainLines) out.push('tryb okrzyków śpiewa głównie wersy w nawiasach (…) – zwykłe wersy: wybierz głos');
   return out.map(w => (window.I18N ? I18N.tr(w) : w));
@@ -1225,6 +1252,28 @@ LYR_TAGS.forEach(([name, tags], k) => {
   $('musTagBtns').append(b);
 });
 
+
+$('musCapBtn').onclick = () => {
+  document.querySelector('.ctx')?.remove();
+  const b = $('musCapBtn').getBoundingClientRect(), menu = mk('div', 'ctx');
+  for (const [name, words] of CAP_WORDS) {
+    const g = mk('div', 'it grp', name), sub = mk('div', 'ctx sub');
+    for (const w of words) {
+      const it = mk('div', 'it', w);
+      it.onclick = () => {
+        menu.remove();
+        const ta = $('musPrompt'), v = ta.value.trim();
+        if (!v.toLowerCase().includes(w.toLowerCase())) ta.value = v ? v + ', ' + w : w;
+        ta.focus();
+      };
+      sub.append(it);
+    }
+    g.append(sub); menu.append(g);
+  }
+  document.body.append(menu);
+  menu.style.left = Math.min(b.left, innerWidth - menu.offsetWidth - 4) + 'px';
+  menu.style.top = (b.bottom + 4) + 'px';
+};
 
 showView('music');
 refreshStatus();

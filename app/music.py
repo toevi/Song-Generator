@@ -9,6 +9,9 @@ from lyrics import VOCAL_LANGS
 
 MUSIC_MAX_S = 300  # YouTube backing tracks: 3 min at first, user 17.11 asked for 4 and 5 min too
 
+KEYS = {f"{n} {k}" for n in "ABCDEFG" for k in ("Major", "Minor")}
+METERS = {"4/4", "3/4", "6/8"}
+
 
 # Voice choice -> (words at the start of the caption, what the planner must avoid). Tested 19.11: with
 # rewrite_caption the planner shortened the caption and turned "male vocals" into "female lead vocal".
@@ -56,6 +59,11 @@ def generate_music(req):
         body.update(caption=f"{voice[0]}, {caption}", rewrite_caption=False, lm_negative_prompt=voice[1])
     if req.get("bpm"):
         body["bpm"] = num("bpm", 40, 220, 100)
+    key, meter = str(req.get("keyscale") or "").strip(), str(req.get("timesignature") or "").strip()
+    if key in KEYS:
+        body["keyscale"] = key
+    if meter in METERS:
+        body["timesignature"] = meter
     timeout = E.config().get("timeout_s", 600)
     plan = E.call("/api/extra/music/prepare", body, timeout=timeout)
     if not isinstance(plan, dict) or plan.get("error") or not str(plan.get("audio_codes") or "").strip():
@@ -66,6 +74,9 @@ def generate_music(req):
              "gen_codes": False, "rewrite_caption": False}
     if "bpm" in body:  # tempo of the chosen style or typed by the user wins over the planner's pick
         final["bpm"] = body["bpm"]
+    for k in ("keyscale", "timesignature"):  # a key or metre chosen by the user wins over the planner's pick
+        if k in body:
+            final[k] = body[k]
     audio, ctype = E.raw("/api/extra/music/generate", final, timeout)
     if len(audio) < 1000:  # KoboldCpp answers with an empty body when rendering failed inside
         raise ValueError("Kobold nie zwrócił dźwięku (błąd w trakcie generowania - spróbuj krótszego utworu).")
