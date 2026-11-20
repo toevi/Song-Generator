@@ -51,7 +51,8 @@
   .toolbar .tf { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
   .toolbar label { font-size: 11px; color: var(--muted); white-space: nowrap; }
   .toolbar select, .toolbar input[type=number] { width: auto; padding: 4px 8px; font-size: 14px; }
-  .toolbar #musBpm, .toolbar #musSteps { width: 74px; }
+  .toolbar #musSteps { width: 74px; }
+  .toolbar #musBpm { width: 150px; }
   .toolbar #musSeed { width: 100px; }
   .toolbar .tcheck { flex-direction: row; align-items: center; gap: 5px; padding-bottom: 6px; }
   .toolbar .tcheck label { font-size: 13px; color: var(--text); }
@@ -232,8 +233,13 @@
       <select id="musLen"><option value="30">30 s</option><option value="60">1 min</option><option value="90">1,5 min</option>
         <option value="120" selected>2 min</option><option value="150">2,5 min</option><option value="180">3 min</option><option value="240">4 min</option>
         <option value="300">5 min</option></select></div>
-    <div class="tf"><label for="musBpm" title="Puste = tempo gatunku albo dobór przez model. 70 = spokojnie, 120 = żwawo">Tempo (BPM)</label>
-      <input id="musBpm" type="number" min="40" max="220" placeholder="auto"></div>
+    <div class="tf"><label for="musBpm" title="Auto = tempo gatunku albo dobór przez model. Wybór ustawia środek przedziału">Tempo (BPM)</label>
+      <select id="musBpm"><option value="">auto</option>
+        <option value="70">60–80 wolno (ballady, soul)</option>
+        <option value="100">90–110 średnio (hip-hop, reggae)</option>
+        <option value="120">110–130 żywo (disco, pop, house)</option>
+        <option value="140">130–150 szybko (techno, rock)</option>
+        <option value="170">160–180 bardzo (D&amp;B, punk)</option></select></div>
     <div class="tf"><label for="musKey" title="Puste = dobiera model. Najstabilniejsze: C, G, D, Am, Em">Tonacja</label>
       <select id="musKey"><option value="">auto</option><option>C Major</option><option>G Major</option><option>D Major</option><option>F Major</option>
         <option>A Minor</option><option>E Minor</option><option>D Minor</option><option>B Minor</option></select></div>
@@ -363,7 +369,7 @@
       </ul>
       <h3>Pokrętła na górnym pasku</h3>
       <ul>
-        <li>Tempo (BPM): puste = tempo gatunku albo dobór przez model. 70 to spokojnie, 120 żwawo.</li>
+        <li>Tempo (BPM): auto = tempo gatunku albo dobór przez model. Pięć przedziałów: 60–80 wolno (ballady, soul), 90–110 średnio (hip-hop, reggae), 110–130 żywo (disco, pop, house), 130–150 szybko (techno, rock), 160–180 bardzo szybko (drum &amp; bass, punk). Wybór ustawia środek przedziału.</li>
         <li>Kroki: liczba kroków dyfuzji, 4–50. Więcej daje dokładniejszy, ale wolniejszy utwór. Domyślnie 8.</li>
         <li>Tonacja i Metrum: puste = dobiera model. Najstabilniejsze są C, G, D, Am, Em oraz 4/4; 3/4 to walc, 6/8 swing.</li>
         <li>Zaawansowane (pod opisem stylu): Wierność opisowi (guidance), Shift, Kreatywność i Ścisłość planisty (temperatura i CFG modelu, który układa plan utworu). Puste = ustawienia domyślne. Przy porównywaniu ustawień ustal seed, żeby losowość nie zakłócała wyniku.</li>
